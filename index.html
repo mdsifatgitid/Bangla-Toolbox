@@ -3686,8 +3686,7 @@ input:checked + .slider:before {
                                     <a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="four-space">চারটি স্পেস</a>
                                     <a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="single-enter">একটি এন্টার</a>
                                     <a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="double-enter">দুটি এন্টার</a>
-                                    <a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="double-enter-v2">দুটি এন্টার V2</a>
-
+									<a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="double-enter-v2">দুটি এন্টার V2</a>
                                     <a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="custom">কাস্টম</a>
                                     <a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="custom-serial">ক্রমিকসহ কাস্টম</a>
                                 </div>
@@ -3726,8 +3725,7 @@ input:checked + .slider:before {
                                     <a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="four-space">চারটি স্পেস</a>
                                     <a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="single-enter">একটি এন্টার</a>
                                     <a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="double-enter">দুটি এন্টার</a>
-                                    <a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="double-enter-v2">দুটি এন্টার V2</a>
-
+									<a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="double-enter-v2">দুটি এন্টার V2</a>
                                     <a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="custom">কাস্টম</a>
                                     <a href="#" class="text-gray-700 dark:text-gray-200 block px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600" data-preset="custom-serial">ক্রমিকসহ কাস্টম</a>
                                 </div>
@@ -9199,14 +9197,12 @@ async function pasteFromClipboard(textareaId) {
         // প্রিসেট অনুযায়ী টেক্সট প্রস্তুত করুন
         switch (preset) {
             case 'double-enter-v2': {
-                // ধাপ ১: টেক্সটের শুরু ও শেষের অতিরিক্ত স্পেস মুছে দিন এবং ২ বা তার বেশি ফাঁকা লাইনকে একটি লাইনে রূপান্তর করুন।
+                // ধাপ ১: টেক্সটের ভেতরের একাধিক ফাঁকা লাইনকে একটি লাইনে রূপান্তর করুন।
                 let processedText = clipboardText.trim().replace(/(\r?\n\s*){2,}/g, '\n');
                 
-                // ধাপ ২: ব্যবহারকারীর অনুরোধ অনুযায়ী, প্রতিটি লাইনকে একটি এন্টার দিয়ে আলাদা করা হয়েছে। তাই এখানে কোনো পরিবর্তনের প্রয়োজন নেই।
-                
-                // যদি টেক্সটবক্সটি আগে থেকেই খালি না থাকে, তাহলে পেস্ট করার আগে একটি এন্টার যোগ করুন
+                // ধাপ ২: যদি টেক্সটবক্সটি খালি না থাকে, তাহলে পেস্ট করার আগে দুটি এন্টার যোগ করুন।
                 if (textarea.value.trim() !== '') {
-                    textToInsert = '\n' + processedText;
+                    textToInsert = '\n\n' + processedText;
                 } else {
                     textToInsert = processedText;
                 }
@@ -9269,12 +9265,6 @@ async function pasteFromClipboard(textareaId) {
         showCustomAlert('পেস্ট করতে ব্যর্থ হয়েছে। ব্রাউজার পারমিশন চেক করুন।');
     }
 }
-
-
-
-
-
-
 
 // ====================================================================
 // END: PASTE FROM CLIPBOARD FUNCTIONALITY
