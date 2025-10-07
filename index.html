@@ -12164,134 +12164,6 @@ if (importantLinksTabForCounter) {
 // END: VISITOR COUNTER SCRIPT
 // ====================================================================
 
-// ====================================================================
-// START: GLOBAL VISITOR COUNTER (FIREBASE)
-// ====================================================================
-
-// START: Firebase Configuration
-
-// আপনার দেওয়া কনফিগারেশন এখানে যুক্ত করা হয়েছে।
-  const firebaseConfig = {
-    apiKey: "AIzaSyBmTptSZWbNB5MrT8jIWVm6knak2L2Xv40",
-    authDomain: "bangla-toolbox1.firebaseapp.com",
-    projectId: "bangla-toolbox1",
-    storageBucket: "bangla-toolbox1.firebasestorage.app",
-    messagingSenderId: "345647713379",
-    appId: "1:345647713379:web:d3e121c3a7e258b971bc56",
-    measurementId: "G-6NVS7YFNBX"
-  };
-// END: Firebase Configuration
-
-async function initializeGlobalCounter() {
-    try {
-        // Firebase SDK গুলি ডায়নামিকভাবে ইম্পোর্ট করা হচ্ছে
-        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
-        const { getFirestore, doc, runTransaction, onSnapshot } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-        const { getAuth, signInAnonymously, signInWithCustomToken } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
-
-        // Firebase কনফিগ না থাকলে কাউন্টার কার্ডগুলো দেখানো হবে না
-        if (typeof firebaseConfig === 'undefined' || !firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey === "YOUR_API_KEY") {
-            console.error("Firebase কনফিগ পাওয়া যায়নি। গ্লোবাল কাউন্টার কাজ করবে না।");
-            const todayCard = document.getElementById('all-today-visits')?.parentElement;
-            const totalCard = document.getElementById('all-total-visits')?.parentElement;
-            if(todayCard) todayCard.style.display = 'none';
-            if(totalCard) totalCard.style.display = 'none';
-            return;
-        }
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        
-        // ব্যবহারকারীকে সাইন ইন করানো হচ্ছে
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-            await signInAnonymously(auth);
-        }
-        console.log("Firebase auth state:", auth.currentUser ? auth.currentUser.uid : "Not signed in");
-
-        const todayString = new Date().toISOString().split('T')[0];
-        
-        // *** পরিবর্তন: ডাটাবেসের পাথ সহজ করা হয়েছে ***
-        const counterDocRef = doc(db, "global_visitor_stats", "counts");
-
-        // ভিজিট সংখ্যা বাড়ানোর ফাংশন
-        const incrementCounts = async () => {
-             try {
-                await runTransaction(db, async (transaction) => {
-                    const counterDoc = await transaction.get(counterDocRef);
-
-                    if (!counterDoc.exists()) {
-                        // ডকুমেন্ট না থাকলে নতুন করে তৈরি হবে
-                        transaction.set(counterDocRef, {
-                            totalVisits: 1,
-                            dailyVisits: { [todayString]: 1 }
-                        });
-                    } else {
-                        // ডকুমেন্ট থাকলে সংখ্যা বাড়ানো হবে
-                        const data = counterDoc.data();
-                        const newTotalVisits = (data.totalVisits || 0) + 1;
-                        const newDailyCount = (data.dailyVisits && data.dailyVisits[todayString] ? data.dailyVisits[todayString] : 0) + 1;
-                        
-                        transaction.update(counterDocRef, {
-                            totalVisits: newTotalVisits,
-                            ['dailyVisits.' + todayString]: newDailyCount
-                        });
-                    }
-                });
-            } catch (e) {
-                console.error("Firestore ট্রানজ্যাকশন ব্যর্থ হয়েছে: ", e);
-            }
-        };
-
-        // রিয়েল-টাইমে ভিজিট সংখ্যা দেখানোর ফাংশন
-        const listenForCounts = () => {
-            onSnapshot(counterDocRef, (doc) => {
-                const allTodayVisitsEl = document.getElementById('all-today-visits');
-                const allTotalVisitsEl = document.getElementById('all-total-visits');
-
-                if (doc.exists()) {
-                    const data = doc.data();
-                    const total = data.totalVisits || 0;
-                    const today = (data.dailyVisits && data.dailyVisits[todayString]) ? data.dailyVisits[todayString] : 0;
-
-                    if (allTotalVisitsEl) allTotalVisitsEl.textContent = total.toLocaleString('bn-BD');
-                    if (allTodayVisitsEl) allTodayVisitsEl.textContent = today.toLocaleString('bn-BD');
-                } else {
-                    if (allTotalVisitsEl) allTotalVisitsEl.textContent = '০';
-                    if (allTodayVisitsEl) allTodayVisitsEl.textContent = '০';
-                }
-            }, (error) => {
-                 console.error("Firestore ডকুমেন্ট শুনতে সমস্যা হচ্ছে:", error);
-            });
-        };
-
-        // এই সেশনে ব্যবহারকারীর ভিজিট গণনা হয়েছে কিনা তা পরীক্ষা করা হচ্ছে
-        if (!sessionStorage.getItem('globalVisitCounted')) {
-            await incrementCounts();
-            sessionStorage.setItem('globalVisitCounted', 'true');
-        }
-
-        // রিয়েল-টাইম আপডেটের জন্য লিসেনার চালু করা হচ্ছে
-        listenForCounts();
-
-    } catch (error) {
-        console.error("গ্লোবাল ভিজিটর কাউন্টার চালু করতে সমস্যা:", error);
-        const todayCard = document.getElementById('all-today-visits')?.parentElement;
-        const totalCard = document.getElementById('all-total-visits')?.parentElement;
-        if (todayCard) todayCard.style.display = 'none';
-        if (totalCard) totalCard.style.display = 'none';
-    }
-}
-
-// ফাংশনটি কল করার জন্য DOMContentLoaded ইভেন্ট ব্যবহার করা হচ্ছে
-document.addEventListener('DOMContentLoaded', initializeGlobalCounter);
-// ====================================================================
-// END: GLOBAL VISITOR COUNTER (FIREBASE)
-// ====================================================================
-
-
 
 //নতুন কোনো ট্যাব যুক্ত করলে তার স্ক্রিপ্ট এটির আগে অ্যাড করতে হবে।
 
@@ -14246,5 +14118,147 @@ function initializeHolidayListTab() {
         };
 
     </script>
+
+	<script type="module">
+// ====================================================================
+// START: GLOBAL VISITOR COUNTER (FIREBASE)
+// ====================================================================
+
+// Firebase কনফিগারেশন এখানে অপরিবর্তিত থাকবে
+const firebaseConfig = {
+  apiKey: "AIzaSyBmTptSZWbNB5MrT8jIWVm6knak2L2Xv40",
+  authDomain: "bangla-toolbox1.firebaseapp.com",
+  projectId: "bangla-toolbox1",
+  storageBucket: "bangla-toolbox1.firebasestorage.app",
+  messagingSenderId: "345647713379",
+  appId: "1:345647713379:web:d3e121c3a7e258b971bc56",
+  measurementId: "G-6NVS7YFNBX"
+};
+
+async function initializeGlobalCounter() {
+    try {
+        // Firebase SDK গুলি ডায়নামিকভাবে ইম্পোর্ট করা হচ্ছে
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
+        const { getFirestore, doc, runTransaction, onSnapshot } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+        const { getAuth, signInAnonymously, signInWithCustomToken } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+
+        if (typeof firebaseConfig === 'undefined' || !firebaseConfig.apiKey) {
+            console.error("Firebase config is missing.");
+            // কনফিগ না থাকলে কাউন্টার কার্ডগুলো লুকিয়ে রাখা হবে
+            document.getElementById('all-today-visits')?.parentElement.style.display = 'none';
+            document.getElementById('all-total-visits')?.parentElement.style.display = 'none';
+            return;
+        }
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        // ব্যবহারকারীকে সাইন ইন করানো হচ্ছে
+        try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+            if (!auth.currentUser) {
+                throw new Error("Firebase Authentication failed, user is null.");
+            }
+            console.log("Firebase Authentication successful. User UID:", auth.currentUser.uid);
+        } catch (authError) {
+            console.error("Firebase Authentication Error:", authError);
+        }
+
+        // --- CORRECTED PART ---
+        // সঠিক পাথ তৈরি করার জন্য __app_id ব্যবহার করা হচ্ছে
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const todayString = new Date().toISOString().split('T')[0];
+        // ডাটাবেসের সঠিক পাথ ব্যবহার করা হচ্ছে
+        const counterDocRef = doc(db, "artifacts", appId, "public", "data", "global_visitor_stats", "counts");
+        // --- END OF CORRECTION ---
+
+        // ভিজিট সংখ্যা বাড়ানোর ফাংশন
+        const incrementCounts = async () => {
+             try {
+                await runTransaction(db, async (transaction) => {
+                    const counterDoc = await transaction.get(counterDocRef);
+
+                    if (!counterDoc.exists()) {
+                        console.log("Counter document does not exist. Creating new one.");
+                        // ডকুমেন্ট না থাকলে নতুন করে তৈরি হবে
+                        transaction.set(counterDocRef, {
+                            totalVisits: 1,
+                            dailyVisits: { [todayString]: 1 }
+                        });
+                    } else {
+                        // ডকুমেন্ট থাকলে সংখ্যা বাড়ানো হবে
+                        const data = counterDoc.data();
+                        const newTotalVisits = (data.totalVisits || 0) + 1;
+                        
+                        const dailyVisits = data.dailyVisits || {};
+                        const newDailyCount = (dailyVisits[todayString] || 0) + 1;
+                        
+                        console.log(`Incrementing counts. Total: ${newTotalVisits}, Today: ${newDailyCount}`);
+                        transaction.update(counterDocRef, {
+                            totalVisits: newTotalVisits,
+                            [`dailyVisits.${todayString}`]: newDailyCount
+                        });
+                    }
+                });
+                 console.log("Transaction to increment counts was successful.");
+            } catch (e) {
+                console.error("Firestore transaction failed: ", e);
+            }
+        };
+
+        // রিয়েল-টাইমে ভিজিট সংখ্যা দেখানোর ফাংশন
+        const listenForCounts = () => {
+            onSnapshot(counterDocRef, (doc) => {
+                const allTodayVisitsEl = document.getElementById('all-today-visits');
+                const allTotalVisitsEl = document.getElementById('all-total-visits');
+
+                if (doc.exists()) {
+                    const data = doc.data();
+                    const total = data.totalVisits || 0;
+                    const today = (data.dailyVisits && data.dailyVisits[todayString]) ? data.dailyVisits[todayString] : 0;
+                    
+                    console.log(`Live update received. Total: ${total}, Today: ${today}`);
+                    if (allTotalVisitsEl) allTotalVisitsEl.textContent = total.toLocaleString('bn-BD');
+                    if (allTodayVisitsEl) allTodayVisitsEl.textContent = today.toLocaleString('bn-BD');
+                } else {
+                    console.log("Live update: Counter document does not exist.");
+                    if (allTotalVisitsEl) allTotalVisitsEl.textContent = '০';
+                    if (allTodayVisitsEl) allTodayVisitsEl.textContent = '০';
+                }
+            }, (error) => {
+                 console.error("Firestore snapshot listener error:", error);
+            });
+        };
+
+        // এই সেশনে ব্যবহারকারীর ভিজিট গণনা হয়েছে কিনা তা পরীক্ষা করা হচ্ছে
+        if (!sessionStorage.getItem('globalVisitCounted')) {
+            await incrementCounts();
+            sessionStorage.setItem('globalVisitCounted', 'true');
+        }
+
+        // রিয়েল-টাইম আপডেটের জন্য লিসেনার চালু করা হচ্ছে
+        listenForCounts();
+
+    } catch (error) {
+        console.error("Failed to initialize global visitor counter:", error);
+        // কোনো সমস্যা হলে কাউন্টার কার্ডগুলো লুকিয়ে রাখা হবে
+        document.getElementById('all-today-visits')?.parentElement.style.display = 'none';
+        document.getElementById('all-total-visits')?.parentElement.style.display = 'none';
+    }
+}
+
+// ফাংশনটি কল করার জন্য DOMContentLoaded ইভেন্ট ব্যবহার করা হচ্ছে
+document.addEventListener('DOMContentLoaded', initializeGlobalCounter);
+// ====================================================================
+// END: GLOBAL VISITOR COUNTER (FIREBASE)
+// ====================================================================
+
+</script>
+	
 </body>
 </html>
