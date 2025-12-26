@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+        <!-- PWA Manifest & Meta -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="apple-touch-icon" href="https://mdsifatgitid.github.io/converticon.png">
+    
     <title>Bangla Toolbox</title>
 	<link rel="icon" type="image/png" href="https://mdsifatgitid.github.io/converticon.png">
 <!-- Tailwind CSS CDN -->
@@ -6796,6 +6802,63 @@ body.sidebar-open #sidebarOverlay {
 /* END: Diff Checker Styles */
 /* ======================================================== */
 
+/* ========================================= */
+/* START: Voice Command & PWA Styles (নতুন) */
+/* ========================================= */
+.voice-command-btn {
+    background-color: #e0e7ff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+    margin-right: 8px;
+    position: relative;
+}
+.dark .voice-command-btn {
+    background-color: #4a5568;
+    color: #f7fafc;
+}
+.voice-command-btn:hover {
+    transform: scale(1.1);
+    background-color: #c7d2fe;
+}
+.dark .voice-command-btn:hover {
+    background-color: #718096;
+}
+.voice-command-btn.listening {
+    background-color: #ef4444; /* শোনার সময় লাল হবে */
+    color: white;
+    animation: pulse-ring 1.5s infinite;
+}
+.voice-command-btn.listening svg {
+    animation: bounce 1s infinite;
+}
+@keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+/* PWA Install Button (ডিফল্টভাবে লুকানো থাকবে) */
+#pwaInstallBtn {
+    display: none;
+    background-color: #10b981;
+    color: white;
+}
+#pwaInstallBtn:hover {
+    background-color: #059669;
+}
+/* ========================================= */
+/* END: Voice Command & PWA Styles */
+/* ========================================= */
+
 
 <!-- এখান থেকে ওপরে নতুন ট্যাবের সি এস এস কোড লিখতে হবে বা বসাতে হয় বা বসাতে হবে -->
     </style>
@@ -6863,17 +6926,36 @@ body.sidebar-open #sidebarOverlay {
 <!-- Animated News Ticker End -->
 
 
-        <h2 id="main-heading" class="text-2xl font-bold text-gray-800 dark:text-white mb-0">বাংলা টুলবক্স</h2>
+<!-- টাইটেল এবং ভয়েস কমান্ড বাটন এরিয়া শুরু -->
+        <div class="flex justify-center items-center gap-3 mb-2 mt-2">
+            <h2 id="main-heading" class="text-2xl font-bold text-gray-800 dark:text-white mb-0">বাংলা টুলবক্স</h2>
+            
+            <!-- Voice Command Button (Moved Here) -->
+            <button id="voiceCommandBtn" type="button" class="voice-command-btn w-9 h-9 bg-indigo-100 dark:bg-gray-700 hover:bg-indigo-200 dark:hover:bg-gray-600 text-indigo-600 dark:text-indigo-300 rounded-full flex justify-center items-center transition-all duration-300 shadow-sm" title="ভয়েস কমান্ড">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+            </button>
+        </div>
+        <!-- টাইটেল এবং ভয়েস কমান্ড বাটন এরিয়া শেষ -->
 
-        <div class="tab-buttons">
-    <!-- থিম টগল বাটন এখানে সরানো হয়েছে -->
-    <div class="theme-toggle-container">
-        <button id="theme-toggle" type="button" class="theme-toggle-button" title="লাইট/ডার্ক মোডে পরিবর্তন করুন">
-            <svg id="sun-icon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
-            <svg id="moon-icon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-        </button>
-    </div>
-    <button id="basicCalcTab" class="tab-button active rounded-xl">সাধারণ ক্যালকুলেটর</button>
+<div class="tab-buttons">
+            <!-- থিম টগল বাটন কন্টেইনার শুরু -->
+            <div class="theme-toggle-container">
+                <!-- PWA Install Button -->
+                <button id="pwaInstallBtn" type="button" class="theme-toggle-button mr-2" title="অ্যাপটি ইন্সটল করুন">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                </button>
+                
+                <!-- এখান থেকে ভয়েস কমান্ড বাটনটি সরানো হয়েছে কারণ এটি টাইটেলের পাশে নেওয়া হয়েছে -->
+
+                <!-- Theme Toggle Button -->
+                <button id="theme-toggle" type="button" class="theme-toggle-button" title="লাইট/ডার্ক মোডে পরিবর্তন করুন">
+                    <svg id="sun-icon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                    <svg id="moon-icon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                </button>
+            </div> 
+            <!-- থিম টগল বাটন কন্টেইনার শেষ -->
+            
+            <button id="basicCalcTab" class="tab-button active rounded-xl">সাধারণ ক্যালকুলেটর</button>
     <button id="scientificCalcTab" class="tab-button rounded-xl">সাইন্টিফিক ক্যালকুলেটর</button>
 	<button id="dateCalcTab" class="tab-button rounded-xl">তারিখ ও সময়</button>
     <button id="ageCalcTab" class="tab-button rounded-xl">বয়স ক্যালকুলেটর</button>
@@ -26086,6 +26168,263 @@ function initializeExpenseTracker() {
 // ========================================================
 // END: Expense Tracker Script
 // ========================================================
+
+// ====================================================================
+// START: VOICE COMMAND & PWA LOGIC (সংশোধিত)
+// ====================================================================
+
+// --- 1. Voice Command Logic ---
+const voiceBtn = document.getElementById('voiceCommandBtn');
+let recognition;
+
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous = false; // একটি কমান্ড শুনেই থামবে
+    recognition.lang = 'bn-BD'; // বাংলা ভাষা সেট করা হয়েছে
+    recognition.interimResults = false;
+
+    recognition.onstart = function() {
+        voiceBtn.classList.add('listening');
+        showCustomAlert("শুনছি... বলুন (যেমন: 'ক্যালকুলেটর', 'নোটপ্যাড', 'আবহাওয়া')");
+    };
+
+    recognition.onend = function() {
+        voiceBtn.classList.remove('listening');
+    };
+
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript.toLowerCase().trim();
+        console.log("Voice Command Recieved:", transcript);
+        processVoiceCommand(transcript);
+    };
+
+    recognition.onerror = function(event) {
+        console.error("Speech recognition error", event.error);
+        voiceBtn.classList.remove('listening');
+        if (event.error === 'not-allowed') {
+            showCustomAlert("মাইক্রোফোন ব্যবহারের অনুমতি নেই।");
+        }
+    };
+
+    if (voiceBtn) {
+        voiceBtn.addEventListener('click', () => {
+            try {
+                recognition.start();
+            } catch (e) {
+                console.log("Recognition already started or error:", e);
+                recognition.stop();
+            }
+        });
+    }
+} else {
+    if (voiceBtn) voiceBtn.style.display = 'none'; // ব্রাউজার সাপোর্ট না করলে বাটন লুকান
+    console.log("Web Speech API not supported in this browser.");
+}
+
+function processVoiceCommand(command) {
+    // কমান্ড এবং ট্যাব বাটনের আইডির ম্যাপিং
+    // পরিবর্তন: সরাসরি বাটনের আইডিতে ম্যাপ করা হয়েছে যাতে click() ইভেন্ট ব্যবহার করা যায়
+    const commandMap = {
+        'ক্যালকুলেটর': 'basicCalcTab',
+        'হিসাব': 'basicCalcTab',
+        'বেসিক': 'basicCalcTab',
+        'সাইন্টিফিক': 'scientificCalcTab',
+        'বিজ্ঞান': 'scientificCalcTab',
+        'তারিখ': 'dateCalcTab',
+        'সময়': 'dateCalcTab',
+        'বয়স': 'ageCalcTab',
+        'ওয়েব': 'webSearchTab',
+        'সার্চ': 'webSearchTab',
+        'ব্রাউজার': 'webSearchTab',
+        'চ্যাট': 'textAssistantTab',
+        'জেমিনি': 'textAssistantTab',
+        'কনভার্টার': 'converterTab',
+        'বিজয়': 'converterTab',
+        'অভ্র': 'converterTab',
+        'নামাজ': 'prayerTimeTab',
+        'আজান': 'prayerTimeTab',
+        'ট্রান্সলেটর': 'translatorTab',
+        'অনুবাদ': 'translatorTab',
+        'ওয়ার্ড': 'wordCounterTab',
+        'শব্দ': 'wordCounterTab',
+        'অর্থ': 'wordMeaningTab',
+        'বানান': 'spellCheckTab',
+        'শুদ্ধ': 'spellCheckTab',
+        'সাজানো': 'textBeautifierTab',
+        'ওসিআর': 'imageToTextTab',
+        'ছবি থেকে লেখা': 'imageToTextTab',
+        'টাইপিং': 'typingTestTab',
+        'টাইপ': 'typingTestTab',
+        'ভয়েস টু টেক্সট': 'sttTab',
+        'কথা থেকে লেখা': 'sttTab',
+        'টেক্সট টু স্পিচ': 'ttsTab',
+        'পড়ে শোনাও': 'ttsTab',
+        'ম্যাপ': 'mapTab',
+        'মানচিত্র': 'mapTab',
+        'আবহাওয়া': 'weatherTab',
+        'পরিমাপ': 'measurementTab',
+        'ইউনিট': 'measurementTab',
+        'নোটপ্যাড': 'notepadTab',
+        'নোট': 'notepadTab',
+        'টুডু': 'notepadTab',
+        'ড্যাশবোর্ড': 'dashboardTab',
+        'হোম': 'dashboardTab',
+        'ঘড়ি': 'clockTab',
+        'স্টপওয়াচ': 'clockTab',
+        'টাইমার': 'clockTab',
+        'প্লেয়ার': 'playerTab',
+        'গান': 'playerTab',
+        'ভিডিও': 'playerTab',
+        'কুইজ': 'quizTab',
+        'প্রশ্ন': 'quizTab',
+        'ইতিহাস': 'historyTab',
+        'আজকের দিন': 'historyTab',
+        'দিবস': 'daysObservancesTab',
+        'ছুটি': 'holidayListTab',
+        'বন্ধ': 'holidayListTab',
+        'যাকাত': 'zakatCalcTab',
+        'কিউআর': 'qrCodeTab',
+        'স্ক্যান': 'qrCodeTab',
+        'বারকোড': 'barcodeGenTab',
+        'রং': 'colorPickerTab',
+        'কালার': 'colorPickerTab',
+        'জরুরি': 'emergencyNumbersTab',
+        'নাম্বার': 'emergencyNumbersTab',
+        'ইনভয়েস': 'invoiceTab',
+        'বিল': 'invoiceTab',
+        'রিসাইজার': 'imageResizerTab',
+        'ছবি এডিট': 'imageResizerTab',
+        'স্বাস্থ্য': 'healthLifestyleTab',
+        'বিএমআই': 'healthLifestyleTab',
+        'ইএমআই': 'emiCalcTab',
+        'লোন': 'emiCalcTab',
+        'মুদ্রা': 'currencyTab',
+        'কারেন্সি': 'currencyTab',
+        'টাকা': 'currencyTab',
+        'দাম': 'unitPriceTab',
+        'তুলনা': 'unitPriceTab',
+        'আইপি': 'ipInfoTab',
+        'রেসিপি': 'recipeTab',
+        'রান্না': 'recipeTab',
+        'পিডিএফ': 'pdfToolsTab',
+        'জেসন': 'jsonFormatterTab',
+        'মিম': 'memeGenTab',
+        'লটারি': 'randomPickerTab',
+        'রেকর্ডার': 'screenRecorderTab',
+        'স্ক্রিন': 'screenRecorderTab',
+        'তাসবিহ': 'tasbeehTab',
+        'জিকির': 'tasbeehTab',
+        'ডিফ': 'diffCheckerTab',
+        'পার্থক্য': 'diffCheckerTab',
+        'আয় ব্যয়': 'expenseTrackerTab',
+        'খরচ': 'expenseTrackerTab',
+        'ডোনেট': 'donateTab',
+        'সাহায্য': 'donateTab',
+        'লিংক': 'importantLinksTab',
+        'প্রোফাইল': 'importantLinksTab',
+        'স্পিড': 'speedTestTab',
+        'গতি': 'speedTestTab'
+    };
+
+    // ফাজি ম্যাচিং (Fuzzy Matching) - ইনপুটের মধ্যে কিওয়ার্ড খুঁজবে
+    let foundButtonId = null;
+    let matchedKeyword = "";
+
+    for (const key in commandMap) {
+        if (command.includes(key)) {
+            foundButtonId = commandMap[key];
+            matchedKeyword = key;
+            break; // প্রথম মিল পেলেই থামবে
+        }
+    }
+
+    if (foundButtonId) {
+        const targetButton = document.getElementById(foundButtonId);
+        if (targetButton) {
+            // বাটনে ক্লিক সিমুলেট করা হচ্ছে
+            // এটি showTab() এবং অন্যান্য প্রয়োজনীয় ইনিশিয়ালাইজেশন ফাংশন রান করবে
+            targetButton.click();
+            
+            // যদি বাটনটি ড্রপডাউনের ভেতরে থাকে এবং ড্রপডাউন বন্ধ থাকে, তবে ড্রপডাউনটি ওপেন করার চেষ্টা করা
+            const dropdown = targetButton.closest('.absolute'); 
+            if (dropdown && dropdown.classList.contains('hidden')) {
+                let dropdownToggleBtn;
+                if (dropdown.id === 'moreMenuDropdown') dropdownToggleBtn = document.getElementById('moreMenuBtn');
+                else if (dropdown.id === 'settingsMenuDropdown') dropdownToggleBtn = document.getElementById('settingsMenuBtn');
+                
+                if (dropdownToggleBtn) {
+                    dropdownToggleBtn.click();
+                }
+            }
+
+            showCustomAlert(`চালু করা হচ্ছে: ${matchedKeyword}`);
+        } else {
+            console.error(`Tab button with ID '${foundButtonId}' not found.`);
+        }
+    } else {
+        showCustomAlert(`দুঃখিত, "${command}" এর জন্য কোনো ফিচার খুঁজে পাইনি।`);
+    }
+}
+
+// --- 2. PWA Registration Logic ---
+// PWA কাজ করার জন্য manifest.json এবং sw.js ফাইল থাকতে হবে।
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(registration => {
+                console.log('PWA ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(err => {
+                console.log('PWA ServiceWorker registration failed: ', err);
+            });
+    });
+}
+
+// PWA Install Button Logic
+let deferredPrompt;
+const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // ক্রোম ৬০+ এ অটোমেটিক প্রম্পট বন্ধ করা
+    e.preventDefault();
+    // ইভেন্টটি পরে ব্যবহারের জন্য সংরক্ষণ করুন
+    deferredPrompt = e;
+    // ইন্সটল বাটনটি দৃশ্যমান করুন
+    if (pwaInstallBtn) {
+        pwaInstallBtn.style.display = 'flex';
+        
+        pwaInstallBtn.addEventListener('click', () => {
+            // বাটন লুকান
+            pwaInstallBtn.style.display = 'none';
+            // প্রম্পট দেখান
+            deferredPrompt.prompt();
+            // ব্যবহারকারীর প্রতিক্রিয়া জানুন
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the PWA install prompt');
+                } else {
+                    console.log('User dismissed the PWA install prompt');
+                }
+                deferredPrompt = null;
+            });
+        });
+    }
+});
+
+// অ্যাপ ইন্সটল হয়ে গেলে বাটন লুকান
+window.addEventListener('appinstalled', () => {
+    console.log('PWA was installed');
+    if (pwaInstallBtn) pwaInstallBtn.style.display = 'none';
+});
+
+// ====================================================================
+// END: VOICE COMMAND & PWA LOGIC
+// ====================================================================
+
+
+
+
 
 //এই কমেন্টের আগেও নতুন ট্যাব এর স্ক্রিপ্ট বসানো যাবে বা বসাতে হয় ।
         window.onload = function() {
