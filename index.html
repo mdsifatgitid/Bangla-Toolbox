@@ -26390,7 +26390,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ====================================================================
 
 // ====================================================================
-// START: FEATURED YOUTUBE VIDEO SCRIPT (UPDATED: Popup Window & YT Default)
+// START: FEATURED YOUTUBE VIDEO SCRIPT (UPDATED: Native PiP & Local Fix)
 // ====================================================================
 function initFeaturedVideoSystem() {
     const videoContainer = document.getElementById('rightSideVideoContainer');
@@ -26402,17 +26402,19 @@ function initFeaturedVideoSystem() {
     const saveBtn = document.getElementById('saveYtVideoBtn');
     const clearBtn = document.getElementById('clearYtVideoBtn');
 
-    // সার্ভার কনফিগারেশন তালিকা (পরিবর্তিত: YouTube Official এখন ডিফল্ট/প্রথমে)
+    // সার্ভার কনফিগারেশন তালিকা (Piped ও Invidious বাদ দেওয়া হয়েছে)
     const servers = [
-        { id: 'youtube', name: 'Server: YouTube (Official)', url: (id) => `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&rel=0` },
-        { id: 'nocookie', name: 'Server: YT No-Cookie', url: (id) => `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&rel=0` },
-        { id: 'piped', name: 'Server: Piped (Fast)', url: (id) => `https://piped.video/embed/${id}?autoplay=1` },
-        { id: 'invidious', name: 'Server: Invidious', url: (id) => `https://yewtu.be/embed/${id}?autoplay=1` }
+        { id: 'youtube', name: 'Server: YouTube (Official)', url: (id) => `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&rel=0&enablejsapi=1&origin=${window.location.origin}` },
+        { id: 'nocookie', name: 'Server: YT No-Cookie', url: (id) => `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&rel=0` }
     ];
 
-    // বর্তমান সার্ভার ইনডেক্স (লোকাল স্টোরেজ থেকে)
+    // বর্তমান সার্ভার ইনডেক্স (ডিফল্ট ০ অর্থাৎ YouTube Official)
     let currentServerIndex = parseInt(localStorage.getItem('ytPlayerServerIndex') || '0');
-    if (currentServerIndex < 0 || currentServerIndex >= servers.length) currentServerIndex = 0;
+    // যদি ইনডেক্স সীমার বাইরে থাকে তবে রিসেট করে ০ করা হবে
+    if (currentServerIndex < 0 || currentServerIndex >= servers.length) {
+        currentServerIndex = 0;
+        localStorage.setItem('ytPlayerServerIndex', '0');
+    }
 
     // ভিডিও আইডি বের করার ফাংশন
     function getYoutubeId(url) {
@@ -26475,7 +26477,7 @@ function initFeaturedVideoSystem() {
         }
     }
 
-    // কন্ট্রোল বাটন ইনজেক্ট করা (সার্ভার সুইচ ও Popup)
+    // কন্ট্রোল বাটন ইনজেক্ট করা (সার্ভার সুইচ ও PiP)
     function injectControls() {
         const handle = videoContainer.querySelector('.video-drag-handle');
         if (handle && !document.getElementById('serverSwitchBtn')) {
@@ -26493,58 +26495,84 @@ function initFeaturedVideoSystem() {
                 showCustomAlert(`সার্ভার: ${servers[currentServerIndex].name.replace('Server: ', '')}`);
             };
 
-            // ২. Popup বাটন (আলাদা উইন্ডো)
-            const popupBtn = document.createElement('button');
-            popupBtn.id = 'videoPopupBtn';
-            popupBtn.className = 'text-[10px] font-bold bg-green-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-green-700 border border-white/20';
-            popupBtn.innerHTML = 'Popup';
-            popupBtn.title = 'আলাদা উইন্ডোতে খুলুন';
+            // ২. PiP Mode বাটন (Chrome Document PiP)
+            const pipBtn = document.createElement('button');
+            pipBtn.id = 'videoPipBtn';
+            pipBtn.className = 'text-[10px] font-bold bg-green-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-green-700 border border-white/20';
+            pipBtn.innerHTML = 'PiP Mode';
+            pipBtn.title = 'পিপ মোড (Always on Top)';
             
-            popupBtn.onclick = (e) => {
+            pipBtn.onclick = async (e) => {
                 e.stopPropagation();
-                // বর্তমানে প্লেয়ারে যে লিংকটি চলছে সেটি নেওয়া
-                const linkToOpen = videoFrame.src;
 
-                if (linkToOpen && linkToOpen !== window.location.href) {
-                    // একটি ছোট পপআপ উইন্ডো ওপেন করা
-                    window.open(linkToOpen, 'BanglaToolboxPlayer', 'width=480,height=270,top=100,left=100,toolbar=no,menubar=no,location=no,status=no,resizable=yes,scrollbars=no');
-                    showCustomAlert('ভিডিওটি পপআপ উইন্ডোতে খোলা হয়েছে।');
+                if ('documentPictureInPicture' in window) {
+                    try {
+                        const iframe = document.getElementById('featuredVideoFrame');
+                        const container = document.getElementById('rightSideVideoContainer');
+                        
+                        const pipWindow = await window.documentPictureInPicture.requestWindow({
+                            width: 480,
+                            height: 270
+                        });
+
+                        // স্টাইল ও আইফ্রেম মুভ করা
+                        pipWindow.document.body.style.margin = '0';
+                        pipWindow.document.body.style.background = '#000';
+                        pipWindow.document.body.append(iframe);
+                        iframe.style.width = '100%';
+                        iframe.style.height = '100%';
+
+                        // প্লেসহোল্ডার
+                        const placeholder = document.createElement('div');
+                        placeholder.id = 'pip-placeholder';
+                        placeholder.className = 'w-full h-full flex items-center justify-center text-white bg-black/70 text-xs text-center p-4';
+                        placeholder.innerHTML = 'ভিডিওটি PiP মোডে চলছে...';
+                        container.appendChild(placeholder);
+                        handle.style.visibility = 'hidden';
+
+                        pipWindow.addEventListener("pagehide", () => {
+                            const ph = document.getElementById('pip-placeholder');
+                            if(ph) ph.remove();
+                            handle.style.visibility = 'visible';
+                            container.appendChild(iframe);
+                        });
+                    } catch (err) {
+                        console.error(err);
+                        showCustomAlert('PiP চালু করা যায়নি।');
+                    }
                 } else {
-                    showCustomAlert('কোনো ভিডিও লিংক নেই।');
+                    // ফলব্যাক: সাধারণ পপআপ
+                    const linkToOpen = videoFrame.src;
+                    window.open(linkToOpen, 'YTPlayer', 'width=480,height=270,top=100,left=100');
+                    showCustomAlert('পপআপ উইন্ডোতে খোলা হয়েছে।');
                 }
             };
             
-            // বাটনগুলো যুক্ত করা (Close বাটনের আগে)
-            handle.insertBefore(popupBtn, closeVideoBtn);
-            handle.insertBefore(switchBtn, popupBtn);
-            
+            handle.insertBefore(pipBtn, closeVideoBtn);
+            handle.insertBefore(switchBtn, pipBtn);
             updateSwitchButtonStyle(switchBtn);
         }
         makeDraggable(videoContainer);
     }
 
     function updateSwitchButtonStyle(btn) {
-        if (!btn) btn = document.getElementById('serverSwitchBtn');
         if (!btn) return;
         const server = servers[currentServerIndex];
         btn.textContent = server.name.replace('Server: ', '');
-        // ইউটিউব হলে লাল, অন্যথায় নীল
+        // ইউটিউব বা নো-কুকি হলে লাল, অন্যথায় নীল (এখানে শুধু লালই থাকবে কারণ অন্যগুলো বাদ)
         const isYT = server.id.includes('youtube') || server.id === 'nocookie';
         btn.className = isYT 
             ? 'text-[10px] font-bold bg-red-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-red-700 border border-white/20' 
             : 'text-[10px] font-bold bg-indigo-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-indigo-700 border border-white/20';
     }
 
-    // ভিডিও লোড ফাংশন
     function loadVideoPlayer() {
         const savedUrl = localStorage.getItem('featuredVideoLink');
-        
         if (savedUrl) {
             const videoId = getYoutubeId(savedUrl);
             if (videoId) {
                 if (urlInput) urlInput.value = savedUrl;
-                const embedSrc = servers[currentServerIndex].url(videoId);
-                videoFrame.src = embedSrc;
+                videoFrame.src = servers[currentServerIndex].url(videoId);
                 videoContainer.classList.remove('hidden');
                 injectControls();
             }
@@ -26554,41 +26582,32 @@ function initFeaturedVideoSystem() {
         }
     }
 
-    // ক্লোজ বাটন
     if (closeVideoBtn) {
         closeVideoBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             videoContainer.classList.add('hidden');
             videoFrame.src = ""; 
-            showCustomAlert('ভিডিও প্লেয়ার বন্ধ করা হয়েছে।');
+            showCustomAlert('প্লেয়ার বন্ধ করা হয়েছে।');
         });
     }
 
-    // সেভ বাটন
     if (saveBtn) {
         saveBtn.addEventListener('click', () => {
             const url = urlInput.value.trim();
-            const videoId = getYoutubeId(url);
-
-            if (videoId) {
+            if (getYoutubeId(url)) {
                 localStorage.setItem('featuredVideoLink', url);
-                showCustomAlert('ভিডিও লিংক সেভ করা হয়েছে!');
+                showCustomAlert('লিংক সেভ হয়েছে!');
                 loadVideoPlayer();
-                if(videoContainer.classList.contains('hidden')){
-                    videoContainer.classList.remove('hidden');
-                }
             } else {
-                showCustomAlert('অনুগ্রহ করে সঠিক ইউটিউব লিংক দিন।');
+                showCustomAlert('সঠিক ইউটিউব লিংক দিন।');
             }
         });
     }
 
-    // ক্লিয়ার বাটন
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
             if(urlInput) urlInput.value = '';
             localStorage.removeItem('featuredVideoLink');
-            showCustomAlert('ভিডিও মুছে ফেলা হয়েছে।');
             videoContainer.classList.add('hidden');
             videoFrame.src = "";
         });
@@ -26597,7 +26616,6 @@ function initFeaturedVideoSystem() {
     loadVideoPlayer();
 }
 
-// স্ক্রিপ্ট লোড
 document.addEventListener('DOMContentLoaded', initFeaturedVideoSystem);
 // ====================================================================
 // END: FEATURED YOUTUBE VIDEO SCRIPT
