@@ -26495,58 +26495,82 @@ function initFeaturedVideoSystem() {
                 showCustomAlert(`সার্ভার: ${servers[currentServerIndex].name.replace('Server: ', '')}`);
             };
 
-            // ২. PiP Mode বাটন (Chrome Document PiP)
+            // ২. PiP Mode বাটন (Document PiP API)
             const pipBtn = document.createElement('button');
             pipBtn.id = 'videoPipBtn';
             pipBtn.className = 'text-[10px] font-bold bg-green-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-green-700 border border-white/20';
             pipBtn.innerHTML = 'PiP Mode';
-            pipBtn.title = 'পিপ মোড (Always on Top)';
+            pipBtn.title = 'আলাদা উইন্ডোতে খুলুন (Always on Top)';
             
             pipBtn.onclick = async (e) => {
                 e.stopPropagation();
 
+                // যদি ব্রাউজার Document Picture-in-Picture API সাপোর্ট করে (যেমন: Chrome 111+)
                 if ('documentPictureInPicture' in window) {
                     try {
                         const iframe = document.getElementById('featuredVideoFrame');
                         const container = document.getElementById('rightSideVideoContainer');
                         
+                        // নতুন উইন্ডো রিকোয়েস্ট করা (Always on Top হিসেবে খুলবে)
                         const pipWindow = await window.documentPictureInPicture.requestWindow({
-                            width: 480,
-                            height: 270
+                            width: 400,
+                            height: 225
                         });
 
-                        // স্টাইল ও আইফ্রেম মুভ করা
+                        // নতুন উইন্ডোর বডি স্টাইল সেট করা (যাতে মার্জিন না থাকে)
                         pipWindow.document.body.style.margin = '0';
-                        pipWindow.document.body.style.background = '#000';
+                        pipWindow.document.body.style.backgroundColor = '#000';
+                        pipWindow.document.body.style.display = 'flex';
+                        pipWindow.document.body.style.justifyContent = 'center';
+                        pipWindow.document.body.style.alignItems = 'center';
+
+                        // আইফ্রেমটি নতুন উইন্ডোতে মুভ করা
                         pipWindow.document.body.append(iframe);
                         iframe.style.width = '100%';
                         iframe.style.height = '100%';
 
-                        // প্লেসহোল্ডার
+                        // মেইন উইন্ডোতে প্লেসহোল্ডার দেখানো
                         const placeholder = document.createElement('div');
                         placeholder.id = 'pip-placeholder';
-                        placeholder.className = 'w-full h-full flex items-center justify-center text-white bg-black/70 text-xs text-center p-4';
-                        placeholder.innerHTML = 'ভিডিওটি PiP মোডে চলছে...';
+                        placeholder.className = 'w-full h-full flex flex-col items-center justify-center text-white bg-black/80 text-sm text-center p-4 border border-white/10 rounded-b-lg';
+                        placeholder.innerHTML = `
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2 text-green-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                            <span class="font-bold">ভিডিওটি PiP মোডে চলছে</span>
+                            <span class="text-xs text-gray-400 mt-1">উইন্ডোটি সবকিছুর উপরে থাকবে</span>
+                        `;
+                        
+                        // হ্যান্ডেল বাটনগুলো লুকিয়ে রাখা
+                        handle.style.display = 'none';
                         container.appendChild(placeholder);
-                        handle.style.visibility = 'hidden';
 
+                        // যখন PiP উইন্ডো বন্ধ হবে, তখন আইফ্রেম ফিরিয়ে আনা
                         pipWindow.addEventListener("pagehide", () => {
                             const ph = document.getElementById('pip-placeholder');
                             if(ph) ph.remove();
-                            handle.style.visibility = 'visible';
+                            handle.style.display = 'flex'; // হ্যান্ডেল আবার দেখানো
                             container.appendChild(iframe);
                         });
+
                     } catch (err) {
                         console.error(err);
-                        showCustomAlert('PiP চালু করা যায়নি।');
+                        showCustomAlert('PiP চালু করা যায়নি। সাধারণ পপআপে খোলা হচ্ছে...');
+                        fallbackPopup();
                     }
                 } else {
-                    // ফলব্যাক: সাধারণ পপআপ
-                    const linkToOpen = videoFrame.src;
-                    window.open(linkToOpen, 'YTPlayer', 'width=480,height=270,top=100,left=100');
-                    showCustomAlert('পপআপ উইন্ডোতে খোলা হয়েছে।');
+                    // ফলব্যাক: যদি ব্রাউজার API সাপোর্ট না করে (Firefox বা পুরনো ব্রাউজার)
+                    fallbackPopup();
                 }
             };
+            
+            // ফলব্যাক পপআপ ফাংশন
+            function fallbackPopup() {
+                const linkToOpen = videoFrame.src;
+                // 'alwaysRaised=yes' পুরনো ব্রাউজারের জন্য, আধুনিক ব্রাউজারে কাজ নাও করতে পারে
+                window.open(linkToOpen, 'YTPlayer', 'width=400,height=225,top=100,left=100,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,alwaysRaised=yes');
+                showCustomAlert('পপআপ উইন্ডোতে খোলা হয়েছে। (ব্রাউজারের কারণে এটি সবসময় উপরে নাও থাকতে পারে)');
+            }
             
             handle.insertBefore(pipBtn, closeVideoBtn);
             handle.insertBefore(switchBtn, pipBtn);
@@ -26559,7 +26583,7 @@ function initFeaturedVideoSystem() {
         if (!btn) return;
         const server = servers[currentServerIndex];
         btn.textContent = server.name.replace('Server: ', '');
-        // ইউটিউব বা নো-কুকি হলে লাল, অন্যথায় নীল (এখানে শুধু লালই থাকবে কারণ অন্যগুলো বাদ)
+        // ইউটিউব বা নো-কুকি হলে লাল, অন্যথায় নীল
         const isYT = server.id.includes('youtube') || server.id === 'nocookie';
         btn.className = isYT 
             ? 'text-[10px] font-bold bg-red-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-red-700 border border-white/20' 
