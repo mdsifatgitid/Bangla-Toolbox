@@ -26494,74 +26494,21 @@ function initFeaturedVideoSystem() {
                 showCustomAlert(`সার্ভার পরিবর্তন: ${servers[currentServerIndex].name.replace('Server: ', '')}`);
             };
 
-            // ২. পপআপ / PiP বাটন (Document Picture-in-Picture API সহ)
+            // ২. পপআপ / ফ্লোটিং উইন্ডো বাটন (সমাধান)
             const popupBtn = document.createElement('button');
             popupBtn.id = 'videoPopupBtn';
             popupBtn.className = 'text-[10px] font-bold bg-green-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-green-700 border border-white/20';
-            popupBtn.innerHTML = 'PiP Mode';
-            popupBtn.title = 'পিপ মোড / ফ্লোটিং উইন্ডো (Always on Top)';
-            popupBtn.onclick = async (e) => {
+            popupBtn.innerHTML = 'Pop-up';
+            popupBtn.title = 'ফ্লোটিং উইন্ডোতে খুলুন (ভিডিও সমস্যা হলে এটি ব্যবহার করুন)';
+            popupBtn.onclick = (e) => {
                 e.stopPropagation();
-
-                // অপশন ১: ক্রোম ডকুমেন্ট পিকচার-ইন-পিকচার (Document PiP - Chrome 111+)
-                // এটি আইফ্রেম সহ পুরো প্লেয়ারটিকে একটি ভাসমান উইন্ডোতে নিয়ে যাবে যা সবার উপরে থাকবে
-                if ('documentPictureInPicture' in window) {
-                    try {
-                        const iframe = document.getElementById('featuredVideoFrame');
-                        const playerContainer = document.getElementById('rightSideVideoContainer');
-
-                        // পিপ উইন্ডো রিকোয়েস্ট
-                        const pipWindow = await window.documentPictureInPicture.requestWindow({
-                            width: 400,
-                            height: 225
-                        });
-
-                        // আইফ্রেমটি পিপ উইন্ডোতে মুভ করা
-                        // (নোট: আইফ্রেম মুভ করলে ভিডিও রিলোড হবে, এটি ব্রাউজারের সীমাবদ্ধতা)
-                        pipWindow.document.body.append(iframe);
-                        
-                        // পিপ উইন্ডোর বডি স্টাইল (কালো ব্যাকগ্রাউন্ড)
-                        pipWindow.document.body.style.margin = '0';
-                        pipWindow.document.body.style.background = 'black';
-                        pipWindow.document.body.style.height = '100vh';
-                        pipWindow.document.body.style.display = 'flex';
-                        pipWindow.document.body.style.justifyContent = 'center';
-                        pipWindow.document.body.style.alignItems = 'center';
-                        
-                        iframe.style.height = '100%';
-                        iframe.style.width = '100%';
-
-                        // মেইন উইন্ডোতে একটি প্লেসহোল্ডার দেখানো
-                        const placeholder = document.createElement('div');
-                        placeholder.id = 'pip-placeholder';
-                        placeholder.className = 'w-full h-full flex items-center justify-center text-white text-xs text-center p-2 bg-black/50 backdrop-blur-sm';
-                        placeholder.innerHTML = 'ভিডিওটি PiP মোডে চলছে...<br>(বন্ধ করতে PiP উইন্ডোটি ক্লোজ করুন)';
-                        playerContainer.appendChild(placeholder);
-                        
-                        // ড্র্যাগ হ্যান্ডেল হাইড করা (অপশনাল)
-                        handle.style.display = 'none';
-
-                        // যখন পিপ উইন্ডো বন্ধ হবে, আইফ্রেম ফেরত আনা
-                        pipWindow.addEventListener("pagehide", (event) => {
-                            const placeholderEl = document.getElementById('pip-placeholder');
-                            if(placeholderEl) placeholderEl.remove();
-                            
-                            handle.style.display = 'flex'; // হ্যান্ডেল আবার দেখানো
-                            playerContainer.appendChild(iframe);
-                        });
-                        
-                        return; // সফল হলে এখান থেকেই বের হয়ে যাবে
-                    } catch (err) {
-                        console.error("Document PiP failed, falling back to popup", err);
-                    }
-                }
-
-                // অপশন ২: ফলব্যাক (পুরনো ব্রাউজারের জন্য সাধারণ পপআপ)
+                // আসল লিংকটি লোকাল স্টোরেজ থেকে নেওয়া হচ্ছে
                 const originalLink = localStorage.getItem('featuredVideoLink');
                 const linkToOpen = originalLink ? originalLink : videoFrame.src;
 
                 if (linkToOpen) {
-                    window.open(linkToOpen, 'BanglaToolboxPlayer', 'width=480,height=270,top=100,left=100,toolbar=no,menubar=no,location=no,status=no,resizable=yes');
+                    // একটি ছোট নতুন উইন্ডো ওপেন হবে যা ফ্লোটিং প্লেয়ারের মতো কাজ করবে
+                    window.open(linkToOpen, 'BanglaToolboxPlayer', 'width=854,height=480,top=100,left=100,toolbar=no,menubar=no,location=no,status=no,resizable=yes');
                     showCustomAlert('ভিডিওটি নতুন পপআপ উইন্ডোতে খোলা হয়েছে।');
                 } else {
                     showCustomAlert('কোনো ভিডিও লিংক নেই।');
