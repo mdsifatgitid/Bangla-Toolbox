@@ -26389,9 +26389,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // END: LIVE CRICKET TICKER SCRIPT (UPDATED & REFINED)
 // ====================================================================
 
-// ====================================================================
-// START: FEATURED YOUTUBE VIDEO SCRIPT (UPDATED FOR SIDEBAR & PROXY)
-// ====================================================================
+<!-- ==================================================================== -->
+<!-- START: FEATURED YOUTUBE VIDEO SCRIPT (UPDATED FOR SIDEBAR & PROXY) -->
+<!-- ==================================================================== -->
+
 function initFeaturedVideoSystem() {
     const videoContainer = document.getElementById('rightSideVideoContainer');
     const videoFrame = document.getElementById('featuredVideoFrame');
@@ -26402,22 +26403,20 @@ function initFeaturedVideoSystem() {
     const saveBtn = document.getElementById('saveYtVideoBtn');
     const clearBtn = document.getElementById('clearYtVideoBtn');
 
-    // সার্ভার কনফিগারেশন তালিকা (পরিবর্তিত: Piped এবং Invidious)
+    // সার্ভার কনফিগারেশন তালিকা (Piped ও Invidious রিমুভ করা হয়েছে)
     const servers = [
-        { id: 'piped', name: 'Server: Piped (Primary)', url: (id) => `https://piped.video/embed/${id}?autoplay=1` },
         { id: 'youtube', name: 'Server: YouTube (Official)', url: (id) => `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1` },
-        { id: 'nocookie', name: 'Server: YT No-Cookie', url: (id) => `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1` },
-        { id: 'invidious', name: 'Server: Invidious', url: (id) => `https://yewtu.be/embed/${id}?autoplay=1` }
+        { id: 'nocookie', name: 'Server: YT No-Cookie', url: (id) => `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1` }
     ];
 
     // বর্তমান সার্ভার ইনডেক্স (লোকাল স্টোরেজ থেকে)
     let currentServerIndex = parseInt(localStorage.getItem('ytPlayerServerIndex') || '0');
+    // ইনডেক্স ভ্যালিডেশন (যাতে রিমুভ করা সার্ভার লোড না হয়)
     if (currentServerIndex < 0 || currentServerIndex >= servers.length) currentServerIndex = 0;
 
     // ভিডিও আইডি বের করার শক্তিশালী ফাংশন
     function getYoutubeId(url) {
         if (!url) return null;
-        // ইউটিউব এবং শর্টস (Shorts) উভয় লিংক সাপোর্ট করবে
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : null;
@@ -26427,6 +26426,33 @@ function initFeaturedVideoSystem() {
     function makeDraggable(element) {
         const handle = element.querySelector('.video-drag-handle');
         if (!handle) return;
+
+        // --- নতুন: অটো হাইড এবং হোভার ইফেক্ট লজিক ---
+        // প্রাথমিক স্টাইল সেট করা
+        handle.style.transition = 'opacity 0.3s ease-in-out';
+        handle.style.opacity = '0'; // শুরুতে হাইড থাকবে
+
+        let hideTimeout;
+
+        // কন্ট্রোল দেখানোর ফাংশন
+        function showControls() {
+            handle.style.opacity = '1';
+            clearTimeout(hideTimeout);
+            
+            // ৩ সেকেন্ড পর হাইড হবে
+            hideTimeout = setTimeout(() => {
+                handle.style.opacity = '0';
+            }, 3000);
+        }
+
+        // ইভেন্ট লিসেনার যোগ করা (পুরো ভিডিও কন্টেইনারের উপর)
+        element.addEventListener('mousemove', showControls);
+        element.addEventListener('mouseenter', showControls);
+        element.addEventListener('touchstart', showControls);
+        
+        // ভিডিও লোড হওয়ার সাথে সাথে একবার দেখাবে
+        showControls();
+        // --- অটো হাইড লজিক শেষ ---
 
         let isDragging = false;
         let startX, startY, initialLeft, initialTop;
@@ -26438,6 +26464,11 @@ function initFeaturedVideoSystem() {
             if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
             e.preventDefault();
             isDragging = true;
+            
+            // ড্র্যাগ করার সময় কন্ট্রোল সবসময় ভিজিবল রাখা
+            handle.style.opacity = '1';
+            clearTimeout(hideTimeout);
+
             const clientX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
             const clientY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
             startX = clientX;
@@ -26469,6 +26500,9 @@ function initFeaturedVideoSystem() {
 
         function stopDrag() {
             isDragging = false;
+            // ড্র্যাগ শেষ হলে আবার ৩ সেকেন্ডের টাইমার চালু করা
+            showControls();
+            
             document.removeEventListener('mousemove', drag);
             document.removeEventListener('mouseup', stopDrag);
             document.removeEventListener('touchmove', drag);
@@ -26494,7 +26528,7 @@ function initFeaturedVideoSystem() {
                 showCustomAlert(`সার্ভার পরিবর্তন: ${servers[currentServerIndex].name.replace('Server: ', '')}`);
             };
 
-            // ২. পপআপ / ফ্লোটিং উইন্ডো বাটন (সমাধান)
+            // ২. পপআপ / ফ্লোটিং উইন্ডো বাটন
             const popupBtn = document.createElement('button');
             popupBtn.id = 'videoPopupBtn';
             popupBtn.className = 'text-[10px] font-bold bg-green-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-green-700 border border-white/20';
@@ -26502,12 +26536,10 @@ function initFeaturedVideoSystem() {
             popupBtn.title = 'ফ্লোটিং উইন্ডোতে খুলুন (ভিডিও সমস্যা হলে এটি ব্যবহার করুন)';
             popupBtn.onclick = (e) => {
                 e.stopPropagation();
-                // আসল লিংকটি লোকাল স্টোরেজ থেকে নেওয়া হচ্ছে
                 const originalLink = localStorage.getItem('featuredVideoLink');
                 const linkToOpen = originalLink ? originalLink : videoFrame.src;
 
                 if (linkToOpen) {
-                    // একটি ছোট নতুন উইন্ডো ওপেন হবে যা ফ্লোটিং প্লেয়ারের মতো কাজ করবে
                     window.open(linkToOpen, 'BanglaToolboxPlayer', 'width=854,height=480,top=100,left=100,toolbar=no,menubar=no,location=no,status=no,resizable=yes');
                     showCustomAlert('ভিডিওটি নতুন পপআপ উইন্ডোতে খোলা হয়েছে।');
                 } else {
@@ -26529,7 +26561,6 @@ function initFeaturedVideoSystem() {
         if (!btn) return;
         const server = servers[currentServerIndex];
         btn.textContent = server.name.replace('Server: ', '');
-        // ইউটিউব হলে লাল, অন্যথায় নীল
         const isYT = server.id.includes('youtube') || server.id === 'nocookie';
         btn.className = isYT 
             ? 'text-[10px] font-bold bg-red-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-red-700 border border-white/20' 
@@ -26600,9 +26631,10 @@ function initFeaturedVideoSystem() {
 
 // স্ক্রিপ্ট লোড
 document.addEventListener('DOMContentLoaded', initFeaturedVideoSystem);
-// ====================================================================
-// END: FEATURED YOUTUBE VIDEO SCRIPT
-// ====================================================================
+
+<!-- ==================================================================== -->
+<!-- END: FEATURED YOUTUBE VIDEO SCRIPT -->
+<!-- ==================================================================== -->
     
 // ====================================================================
 // START: আরও সেটিংস (More Settings) TAB SCRIPT (Updated)
