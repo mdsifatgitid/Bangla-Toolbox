@@ -26390,7 +26390,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ====================================================================
 
 // ====================================================================
-// START: FEATURED YOUTUBE VIDEO SCRIPT (UPDATED: Native PiP & Local Fix)
+// START: FEATURED YOUTUBE VIDEO SCRIPT (UPDATED FOR SIDEBAR & PROXY)
 // ====================================================================
 function initFeaturedVideoSystem() {
     const videoContainer = document.getElementById('rightSideVideoContainer');
@@ -26402,29 +26402,28 @@ function initFeaturedVideoSystem() {
     const saveBtn = document.getElementById('saveYtVideoBtn');
     const clearBtn = document.getElementById('clearYtVideoBtn');
 
-    // সার্ভার কনফিগারেশন তালিকা (Piped ও Invidious বাদ দেওয়া হয়েছে)
+    // সার্ভার কনফিগারেশন তালিকা (পরিবর্তিত: Piped এবং Invidious)
     const servers = [
-        { id: 'youtube', name: 'Server: YouTube (Official)', url: (id) => `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&rel=0&enablejsapi=1&origin=${window.location.origin}` },
-        { id: 'nocookie', name: 'Server: YT No-Cookie', url: (id) => `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&rel=0` }
+        { id: 'piped', name: 'Server: Piped (Primary)', url: (id) => `https://piped.video/embed/${id}?autoplay=1` },
+        { id: 'youtube', name: 'Server: YouTube (Official)', url: (id) => `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1` },
+        { id: 'nocookie', name: 'Server: YT No-Cookie', url: (id) => `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1` },
+        { id: 'invidious', name: 'Server: Invidious', url: (id) => `https://yewtu.be/embed/${id}?autoplay=1` }
     ];
 
-    // বর্তমান সার্ভার ইনডেক্স (ডিফল্ট ০ অর্থাৎ YouTube Official)
+    // বর্তমান সার্ভার ইনডেক্স (লোকাল স্টোরেজ থেকে)
     let currentServerIndex = parseInt(localStorage.getItem('ytPlayerServerIndex') || '0');
-    // যদি ইনডেক্স সীমার বাইরে থাকে তবে রিসেট করে ০ করা হবে
-    if (currentServerIndex < 0 || currentServerIndex >= servers.length) {
-        currentServerIndex = 0;
-        localStorage.setItem('ytPlayerServerIndex', '0');
-    }
+    if (currentServerIndex < 0 || currentServerIndex >= servers.length) currentServerIndex = 0;
 
-    // ভিডিও আইডি বের করার ফাংশন
+    // ভিডিও আইডি বের করার শক্তিশালী ফাংশন
     function getYoutubeId(url) {
         if (!url) return null;
+        // ইউটিউব এবং শর্টস (Shorts) উভয় লিংক সাপোর্ট করবে
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : null;
     }
 
-    // ড্র্যাগ হ্যান্ডেল লজিক
+    // ড্র্যাগ হ্যান্ডেল লজিক (ভিডিও মুভ করার জন্য)
     function makeDraggable(element) {
         const handle = element.querySelector('.video-drag-handle');
         if (!handle) return;
@@ -26477,7 +26476,7 @@ function initFeaturedVideoSystem() {
         }
     }
 
-    // কন্ট্রোল বাটন ইনজেক্ট করা (সার্ভার সুইচ ও PiP)
+    // ড্র্যাগ হ্যান্ডেলে সার্ভার সুইচ এবং পপআপ বাটন ইনজেক্ট করা
     function injectControls() {
         const handle = videoContainer.querySelector('.video-drag-handle');
         if (handle && !document.getElementById('serverSwitchBtn')) {
@@ -26485,118 +26484,121 @@ function initFeaturedVideoSystem() {
             // ১. সার্ভার সুইচ বাটন
             const switchBtn = document.createElement('button');
             switchBtn.id = 'serverSwitchBtn';
-            switchBtn.title = 'ভিডিও না চললে সার্ভার পরিবর্তন করুন';
+            switchBtn.title = 'সার্ভার পরিবর্তন করুন (ভিডিও না চললে এখানে ক্লিক করুন)';
             switchBtn.onclick = (e) => {
                 e.stopPropagation();
                 currentServerIndex = (currentServerIndex + 1) % servers.length;
                 localStorage.setItem('ytPlayerServerIndex', currentServerIndex);
                 updateSwitchButtonStyle(switchBtn);
                 loadVideoPlayer(); 
-                showCustomAlert(`সার্ভার: ${servers[currentServerIndex].name.replace('Server: ', '')}`);
+                showCustomAlert(`সার্ভার পরিবর্তন: ${servers[currentServerIndex].name.replace('Server: ', '')}`);
             };
 
-            // ২. PiP Mode বাটন (Document PiP API)
-            const pipBtn = document.createElement('button');
-            pipBtn.id = 'videoPipBtn';
-            pipBtn.className = 'text-[10px] font-bold bg-green-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-green-700 border border-white/20';
-            pipBtn.innerHTML = 'PiP Mode';
-            pipBtn.title = 'আলাদা উইন্ডোতে খুলুন (Always on Top)';
-            
-            pipBtn.onclick = async (e) => {
+            // ২. পপআপ / PiP বাটন (Document Picture-in-Picture API সহ)
+            const popupBtn = document.createElement('button');
+            popupBtn.id = 'videoPopupBtn';
+            popupBtn.className = 'text-[10px] font-bold bg-green-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-green-700 border border-white/20';
+            popupBtn.innerHTML = 'PiP Mode';
+            popupBtn.title = 'পিপ মোড / ফ্লোটিং উইন্ডো (Always on Top)';
+            popupBtn.onclick = async (e) => {
                 e.stopPropagation();
 
-                // যদি ব্রাউজার Document Picture-in-Picture API সাপোর্ট করে (যেমন: Chrome 111+)
+                // অপশন ১: ক্রোম ডকুমেন্ট পিকচার-ইন-পিকচার (Document PiP - Chrome 111+)
+                // এটি আইফ্রেম সহ পুরো প্লেয়ারটিকে একটি ভাসমান উইন্ডোতে নিয়ে যাবে যা সবার উপরে থাকবে
                 if ('documentPictureInPicture' in window) {
                     try {
                         const iframe = document.getElementById('featuredVideoFrame');
-                        const container = document.getElementById('rightSideVideoContainer');
-                        
-                        // নতুন উইন্ডো রিকোয়েস্ট করা (Always on Top হিসেবে খুলবে)
+                        const playerContainer = document.getElementById('rightSideVideoContainer');
+
+                        // পিপ উইন্ডো রিকোয়েস্ট
                         const pipWindow = await window.documentPictureInPicture.requestWindow({
                             width: 400,
                             height: 225
                         });
 
-                        // নতুন উইন্ডোর বডি স্টাইল সেট করা (যাতে মার্জিন না থাকে)
+                        // আইফ্রেমটি পিপ উইন্ডোতে মুভ করা
+                        // (নোট: আইফ্রেম মুভ করলে ভিডিও রিলোড হবে, এটি ব্রাউজারের সীমাবদ্ধতা)
+                        pipWindow.document.body.append(iframe);
+                        
+                        // পিপ উইন্ডোর বডি স্টাইল (কালো ব্যাকগ্রাউন্ড)
                         pipWindow.document.body.style.margin = '0';
-                        pipWindow.document.body.style.backgroundColor = '#000';
+                        pipWindow.document.body.style.background = 'black';
+                        pipWindow.document.body.style.height = '100vh';
                         pipWindow.document.body.style.display = 'flex';
                         pipWindow.document.body.style.justifyContent = 'center';
                         pipWindow.document.body.style.alignItems = 'center';
-
-                        // আইফ্রেমটি নতুন উইন্ডোতে মুভ করা
-                        pipWindow.document.body.append(iframe);
-                        iframe.style.width = '100%';
+                        
                         iframe.style.height = '100%';
+                        iframe.style.width = '100%';
 
-                        // মেইন উইন্ডোতে প্লেসহোল্ডার দেখানো
+                        // মেইন উইন্ডোতে একটি প্লেসহোল্ডার দেখানো
                         const placeholder = document.createElement('div');
                         placeholder.id = 'pip-placeholder';
-                        placeholder.className = 'w-full h-full flex flex-col items-center justify-center text-white bg-black/80 text-sm text-center p-4 border border-white/10 rounded-b-lg';
-                        placeholder.innerHTML = `
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2 text-green-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                            <span class="font-bold">ভিডিওটি PiP মোডে চলছে</span>
-                            <span class="text-xs text-gray-400 mt-1">উইন্ডোটি সবকিছুর উপরে থাকবে</span>
-                        `;
+                        placeholder.className = 'w-full h-full flex items-center justify-center text-white text-xs text-center p-2 bg-black/50 backdrop-blur-sm';
+                        placeholder.innerHTML = 'ভিডিওটি PiP মোডে চলছে...<br>(বন্ধ করতে PiP উইন্ডোটি ক্লোজ করুন)';
+                        playerContainer.appendChild(placeholder);
                         
-                        // হ্যান্ডেল বাটনগুলো লুকিয়ে রাখা
+                        // ড্র্যাগ হ্যান্ডেল হাইড করা (অপশনাল)
                         handle.style.display = 'none';
-                        container.appendChild(placeholder);
 
-                        // যখন PiP উইন্ডো বন্ধ হবে, তখন আইফ্রেম ফিরিয়ে আনা
-                        pipWindow.addEventListener("pagehide", () => {
-                            const ph = document.getElementById('pip-placeholder');
-                            if(ph) ph.remove();
+                        // যখন পিপ উইন্ডো বন্ধ হবে, আইফ্রেম ফেরত আনা
+                        pipWindow.addEventListener("pagehide", (event) => {
+                            const placeholderEl = document.getElementById('pip-placeholder');
+                            if(placeholderEl) placeholderEl.remove();
+                            
                             handle.style.display = 'flex'; // হ্যান্ডেল আবার দেখানো
-                            container.appendChild(iframe);
+                            playerContainer.appendChild(iframe);
                         });
-
+                        
+                        return; // সফল হলে এখান থেকেই বের হয়ে যাবে
                     } catch (err) {
-                        console.error(err);
-                        showCustomAlert('PiP চালু করা যায়নি। সাধারণ পপআপে খোলা হচ্ছে...');
-                        fallbackPopup();
+                        console.error("Document PiP failed, falling back to popup", err);
                     }
+                }
+
+                // অপশন ২: ফলব্যাক (পুরনো ব্রাউজারের জন্য সাধারণ পপআপ)
+                const originalLink = localStorage.getItem('featuredVideoLink');
+                const linkToOpen = originalLink ? originalLink : videoFrame.src;
+
+                if (linkToOpen) {
+                    window.open(linkToOpen, 'BanglaToolboxPlayer', 'width=480,height=270,top=100,left=100,toolbar=no,menubar=no,location=no,status=no,resizable=yes');
+                    showCustomAlert('ভিডিওটি নতুন পপআপ উইন্ডোতে খোলা হয়েছে।');
                 } else {
-                    // ফলব্যাক: যদি ব্রাউজার API সাপোর্ট না করে (Firefox বা পুরনো ব্রাউজার)
-                    fallbackPopup();
+                    showCustomAlert('কোনো ভিডিও লিংক নেই।');
                 }
             };
             
-            // ফলব্যাক পপআপ ফাংশন
-            function fallbackPopup() {
-                const linkToOpen = videoFrame.src;
-                // 'alwaysRaised=yes' পুরনো ব্রাউজারের জন্য, আধুনিক ব্রাউজারে কাজ নাও করতে পারে
-                window.open(linkToOpen, 'YTPlayer', 'width=400,height=225,top=100,left=100,scrollbars=no,resizable=yes,status=no,location=no,toolbar=no,menubar=no,alwaysRaised=yes');
-                showCustomAlert('পপআপ উইন্ডোতে খোলা হয়েছে। (ব্রাউজারের কারণে এটি সবসময় উপরে নাও থাকতে পারে)');
-            }
+            // বাটনগুলো যুক্ত করা (Close বাটনের আগে)
+            handle.insertBefore(popupBtn, closeVideoBtn);
+            handle.insertBefore(switchBtn, popupBtn);
             
-            handle.insertBefore(pipBtn, closeVideoBtn);
-            handle.insertBefore(switchBtn, pipBtn);
             updateSwitchButtonStyle(switchBtn);
         }
         makeDraggable(videoContainer);
     }
 
     function updateSwitchButtonStyle(btn) {
+        if (!btn) btn = document.getElementById('serverSwitchBtn');
         if (!btn) return;
         const server = servers[currentServerIndex];
         btn.textContent = server.name.replace('Server: ', '');
-        // ইউটিউব বা নো-কুকি হলে লাল, অন্যথায় নীল
+        // ইউটিউব হলে লাল, অন্যথায় নীল
         const isYT = server.id.includes('youtube') || server.id === 'nocookie';
         btn.className = isYT 
             ? 'text-[10px] font-bold bg-red-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-red-700 border border-white/20' 
             : 'text-[10px] font-bold bg-indigo-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-indigo-700 border border-white/20';
     }
 
+    // ভিডিও লোড ফাংশন
     function loadVideoPlayer() {
         const savedUrl = localStorage.getItem('featuredVideoLink');
+        
         if (savedUrl) {
             const videoId = getYoutubeId(savedUrl);
             if (videoId) {
                 if (urlInput) urlInput.value = savedUrl;
-                videoFrame.src = servers[currentServerIndex].url(videoId);
+                const embedSrc = servers[currentServerIndex].url(videoId);
+                videoFrame.src = embedSrc;
                 videoContainer.classList.remove('hidden');
                 injectControls();
             }
@@ -26606,32 +26608,41 @@ function initFeaturedVideoSystem() {
         }
     }
 
+    // ক্লোজ বাটন
     if (closeVideoBtn) {
         closeVideoBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             videoContainer.classList.add('hidden');
             videoFrame.src = ""; 
-            showCustomAlert('প্লেয়ার বন্ধ করা হয়েছে।');
+            showCustomAlert('ভিডিও প্লেয়ার বন্ধ করা হয়েছে।');
         });
     }
 
+    // সেভ বাটন
     if (saveBtn) {
         saveBtn.addEventListener('click', () => {
             const url = urlInput.value.trim();
-            if (getYoutubeId(url)) {
+            const videoId = getYoutubeId(url);
+
+            if (videoId) {
                 localStorage.setItem('featuredVideoLink', url);
-                showCustomAlert('লিংক সেভ হয়েছে!');
+                showCustomAlert('ভিডিও লিংক সেভ করা হয়েছে!');
                 loadVideoPlayer();
+                if(videoContainer.classList.contains('hidden')){
+                    videoContainer.classList.remove('hidden');
+                }
             } else {
-                showCustomAlert('সঠিক ইউটিউব লিংক দিন।');
+                showCustomAlert('অনুগ্রহ করে সঠিক ইউটিউব লিংক দিন।');
             }
         });
     }
 
+    // ক্লিয়ার বাটন
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
             if(urlInput) urlInput.value = '';
             localStorage.removeItem('featuredVideoLink');
+            showCustomAlert('ভিডিও মুছে ফেলা হয়েছে।');
             videoContainer.classList.add('hidden');
             videoFrame.src = "";
         });
@@ -26640,6 +26651,7 @@ function initFeaturedVideoSystem() {
     loadVideoPlayer();
 }
 
+// স্ক্রিপ্ট লোড
 document.addEventListener('DOMContentLoaded', initFeaturedVideoSystem);
 // ====================================================================
 // END: FEATURED YOUTUBE VIDEO SCRIPT
