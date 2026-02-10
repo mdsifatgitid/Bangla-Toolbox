@@ -26564,7 +26564,7 @@ function initFeaturedVideoSystem() {
         }
     }
 
-    function injectControls() {
+   function injectControls() {
         const handle = videoContainer.querySelector('.video-drag-handle');
         if (handle && !document.getElementById('serverSwitchBtn')) {
             const switchBtn = document.createElement('button');
@@ -26587,16 +26587,85 @@ function initFeaturedVideoSystem() {
             const popupBtn = document.createElement('button');
             popupBtn.id = 'videoPopupBtn';
             popupBtn.className = 'text-[10px] font-bold bg-green-600 text-white px-2 py-0.5 rounded mr-2 hover:bg-green-700 border border-white/20';
-            popupBtn.innerHTML = 'Pop-up';
-            popupBtn.title = 'ফ্লোটিং উইন্ডোতে খুলুন';
-            popupBtn.onclick = (e) => {
+            popupBtn.innerHTML = 'PiP'; // নাম পরিবর্তন করে PiP রাখা হলো
+            popupBtn.title = 'Picture-in-Picture মোড (Always on Top)';
+            
+            popupBtn.onclick = async (e) => {
                 e.stopPropagation();
+
+                // ১. যদি লোকাল ভিডিও চলে (সরাসরি PiP API ব্যবহার হবে)
+                if (localVideoElement && !localVideoElement.classList.contains('hidden') && !localVideoElement.paused) {
+                    try {
+                        if (document.pictureInPictureElement) {
+                            await document.exitPictureInPicture();
+                        } else {
+                            await localVideoElement.requestPictureInPicture();
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        showCustomAlert('PiP মোড চালু করা যায়নি।');
+                    }
+                    return;
+                }
+
+                // ২. যদি ইউটিউব ভিডিও চলে (Document Picture-in-Picture API ব্যবহার হবে - Chrome 116+)
+                if ('documentPictureInPicture' in window) {
+                    try {
+                        // যদি আইফ্রেম সোর্স না থাকে
+                        if (!videoFrame.src || videoFrame.src === "") {
+                            showCustomAlert('কোনো ভিডিও লিংক নেই।');
+                            return;
+                        }
+
+                        // Always on Top উইন্ডো তৈরি করা
+                        const pipWindow = await window.documentPictureInPicture.requestWindow({
+                            width: 480,
+                            height: 270,
+                        });
+
+                        // PiP উইন্ডোতে আইফ্রেমটি নতুন করে তৈরি করা (সরাসরি মুভ করলে রিলোড হয়)
+                        const pipContainer = pipWindow.document.body;
+                        pipContainer.style.margin = '0';
+                        pipContainer.style.backgroundColor = 'black';
+                        pipContainer.style.display = 'flex';
+                        pipContainer.style.justifyContent = 'center';
+                        pipContainer.style.alignItems = 'center';
+                        pipContainer.style.height = '100%';
+
+                        const newIframe = document.createElement('iframe');
+                        newIframe.src = videoFrame.src;
+                        newIframe.style.width = '100%';
+                        newIframe.style.height = '100%';
+                        newIframe.style.border = 'none';
+                        newIframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+                        newIframe.allowFullscreen = true;
+
+                        pipContainer.append(newIframe);
+
+                        // মেইন উইন্ডোতে ভিডিও বন্ধ বা হাইড করা (অপশনাল)
+                        // videoFrame.classList.add('hidden');
+
+                        // PiP বন্ধ হলে কি হবে
+                        pipWindow.addEventListener("pagehide", (event) => {
+                            // videoFrame.classList.remove('hidden'); // আবার ফিরিয়ে আনা
+                            console.log("PiP window closed");
+                        });
+
+                        showCustomAlert('ভিডিওটি PiP মোডে খোলা হয়েছে।');
+                        return;
+
+                    } catch (err) {
+                        console.log("Document PiP failed, falling back to standard popup.", err);
+                    }
+                }
+
+                // ৩. ফলব্যাক: সাধারণ পপ-আপ উইন্ডো (যদি ব্রাউজারে PiP API না থাকে)
                 const originalLink = localStorage.getItem('featuredVideoLink');
                 const linkToOpen = originalLink ? originalLink : videoFrame.src;
 
-                if (linkToOpen && videoFrame.src) { // আইফ্রেম সোর্স থাকলেই ওপেন হবে
+                if (linkToOpen && videoFrame.src) { 
                     window.open(linkToOpen, 'BanglaToolboxPlayer', 'width=854,height=480,top=100,left=100,toolbar=no,menubar=no,location=no,status=no,resizable=yes');
-                    showCustomAlert('ভিডিওটি নতুন পপআপ উইন্ডোতে খোলা হয়েছে।');
+                    showCustomAlert('ভিডিওটি নতুন উইন্ডোতে খোলা হয়েছে (PiP সাপোর্ট নেই)।');
                 } else {
                     showCustomAlert('কোনো ভিডিও লিংক নেই।');
                 }
