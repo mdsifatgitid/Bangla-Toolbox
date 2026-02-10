@@ -26564,7 +26564,7 @@ function initFeaturedVideoSystem() {
         }
     }
 
-   function injectControls() {
+    function injectControls() {
         const handle = videoContainer.querySelector('.video-drag-handle');
         if (handle && !document.getElementById('serverSwitchBtn')) {
             const switchBtn = document.createElement('button');
@@ -26631,6 +26631,7 @@ function initFeaturedVideoSystem() {
                         pipContainer.style.justifyContent = 'center';
                         pipContainer.style.alignItems = 'center';
                         pipContainer.style.height = '100%';
+                        pipContainer.style.overflow = 'hidden'; // স্ক্রলবার লুকান
 
                         const newIframe = document.createElement('iframe');
                         newIframe.src = videoFrame.src;
