@@ -31872,7 +31872,381 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- END: ফ্লোটিং সাইডবার ভিডিও প্লেয়ার -->
 <!-- ======================================================== -->
 
+<!-- ============================================== -->
+<!-- START: ফায়ারবেস প্রোফাইল, স্টোরেজ উইন্ডো এবং নোটিফিকেশন -->
+<!-- ============================================== -->
 
+<!-- গ্লোবাল অ্যানাউন্সমেন্ট ব্যানার -->
+<div id="globalAnnouncementBanner" class="hidden fixed top-0 left-0 w-full z-[100] bg-blue-600 text-white px-4 py-3 shadow-lg flex justify-between items-center transform transition-transform duration-500 -translate-y-full">
+    <div class="flex items-center gap-3">
+        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6 animate-pulse text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        <span id="announcementText" class="font-medium text-sm md:text-base text-bangla">নতুন আপডেট বা মেসেজ এখানে দেখাবে</span>
+    </div>
+    <button onclick="closeAnnouncement()" class="text-white hover:text-gray-200">
+        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+    </button>
+</div>
+
+<!-- ফ্লোটিং অ্যাকশন বাটনস (ডান দিকে নিচে) -->
+<div class="fixed bottom-6 right-6 flex flex-row gap-4 z-[1000]">
+    <!-- ক্লাউড স্টোরেজ বাটন -->
+    <button onclick="toggleCloudWindow()" class="bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 hover:scale-110 transition-all group relative" title="ফাইল শেয়ারিং">
+        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+        
+    </button>
+    
+    <!-- ইউজার প্রোফাইল বাটন -->
+    <button onclick="toggleProfileWindow()" class="bg-teal-600 text-white p-3 rounded-full shadow-lg hover:bg-teal-700 hover:scale-110 transition-all group relative" title="ইউজার প্রোফাইল">
+        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+    
+    </button>
+</div>
+
+<!-- প্রোফাইল ও সেটিংস চ্যাট উইন্ডো -->
+<div id="profileWindow" class="hidden fixed bottom-24 right-6 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col overflow-hidden text-bangla transition-all">
+    <div class="bg-teal-600 p-4 text-white flex justify-between items-center">
+        <h3 class="font-bold">আমার প্রোফাইল ও সেটিংস</h3>
+        <button onclick="toggleProfileWindow()" class="hover:text-gray-200"><svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+    </div>
+    <div class="p-4 flex-1 overflow-y-auto max-h-96">
+        <div id="userProfileInfo" class="mb-4 pb-4 border-b dark:border-gray-700 text-center">
+            <div class="w-16 h-16 bg-gray-300 rounded-full mx-auto mb-2 flex items-center justify-center text-xl font-bold text-gray-600" id="userAvatar">U</div>
+            <p id="userEmailDisplay" class="text-sm text-gray-600 dark:text-gray-300 mb-2">লগইন করা নেই</p>
+            <button id="googleSignInBtn" class="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded-full w-full flex items-center justify-center gap-2">
+                <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" viewBox="0 0 48 48" width="18px" height="18px"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+                Google দিয়ে সাইন-ইন
+            </button>
+            <button id="signOutBtn" class="hidden mt-2 text-sm text-red-500 hover:underline">লগআউট করুন</button>
+        </div>
+
+        <div class="space-y-3">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ইউনিক ইউজারনেম</label>
+                <input type="text" id="customUsername" placeholder="যেমন: sifat_2024" class="w-full border rounded-md px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:border-teal-500">
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">অটো ক্লাউড সিঙ্ক</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="cloudSyncToggle" class="sr-only peer" checked>
+                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                </label>
+            </div>
+
+            <button onclick="saveSettingsToCloudManually()" class="w-full bg-gray-800 text-white text-sm py-2 rounded-md hover:bg-gray-900 transition-colors">
+                সেটিংস ক্লাউডে সেভ করুন
+            </button>
+            <p class="text-xs text-gray-500 text-center mt-2">থিম, ফন্ট সাইজ ও পিন করা টুলস সেভ থাকবে।</p>
+        </div>
+    </div>
+</div>
+
+<!-- ফাইল শেয়ারিং চ্যাট উইন্ডো -->
+<div id="cloudWindow" class="hidden fixed bottom-24 right-6 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col overflow-hidden text-bangla transition-all">
+    <div class="bg-indigo-600 p-4 text-white flex justify-between items-center">
+        <h3 class="font-bold">ফাইল ক্লাউড শেয়ারিং</h3>
+        <button onclick="toggleCloudWindow()" class="hover:text-gray-200"><svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+    </div>
+    <div class="p-4 flex-1 flex flex-col gap-3">
+        <p class="text-sm text-gray-600 dark:text-gray-300">আপনার কনভার্ট করা PDF বা ছবি আপলোড করে লিঙ্ক শেয়ার করুন।</p>
+        
+        <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer" onclick="document.getElementById('cloudFileInput').click()">
+            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-8 w-8 mx-auto text-indigo-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+            <span class="text-sm font-medium text-gray-600 dark:text-gray-300" id="cloudFileLabel">ফাইল নির্বাচন করুন</span>
+            <input type="file" id="cloudFileInput" class="hidden" onchange="handleCloudFileSelect(event)">
+        </div>
+
+        <button id="uploadBtn" onclick="uploadFileToFirebase()" class="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            আপলোড করুন
+        </button>
+
+        <!-- প্রোগ্রেস বার -->
+        <div id="uploadProgressContainer" class="hidden w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-2">
+            <div id="uploadProgressBar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
+        </div>
+
+        <!-- রেজাল্ট লিঙ্ক -->
+        <div id="uploadResult" class="hidden mt-2 p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-md">
+            <p class="text-xs text-green-800 dark:text-green-300 mb-1 font-medium">লিঙ্ক তৈরি হয়েছে:</p>
+            <div class="flex items-center gap-2">
+                <input type="text" id="sharedFileLink" readonly class="text-xs w-full p-1 border rounded bg-white dark:bg-gray-800 dark:text-white">
+                <button onclick="copySharedLink()" class="p-1 bg-green-600 text-white rounded hover:bg-green-700" title="কপি করুন">
+                    <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- END: ফায়ারবেস প্রোফাইল, স্টোরেজ উইন্ডো এবং নোটিফিকেশন -->
+
+<!-- ============================================== -->
+<!-- START: FIREBASE LOGIC (MODULE) -->
+<!-- ============================================== -->
+<script type="module">
+    // Firebase Modular SDK Imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+    import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
+    // Configuration - Use environment variables if available, otherwise default dummy config
+    // সতর্কতা: বাস্তব প্রোজেক্টে আপনার আসল ফায়ারবেস কনফিগ ব্যবহার করবেন।
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+    apiKey: "AIzaSyBmTptSZWbNB5MrT8jIWVm6knak2L2Xv40", // আপনার দেওয়া কি
+    authDomain: "bangla-toolbox1.firebaseapp.com",
+    projectId: "bangla-toolbox1",
+    storageBucket: "bangla-toolbox1.firebasestorage.app",
+    messagingSenderId: "345647713379",
+    appId: "1:345647713379:web:d3e121c3a7e258b971bc56",
+    measurementId: "G-6NVS7YFNBX"
+    };
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'bangla-toolbox';
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+    let analytics;
+    try { analytics = getAnalytics(app); } catch(e){}
+
+    let currentUser = null;
+    let selectedUploadFile = null;
+
+    // --- ১. Authentication Logic ---
+    const initAuth = async () => {
+        try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        } catch (error) {
+            console.error("Auth Error:", error);
+        }
+    };
+    initAuth();
+
+    onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+        updateProfileUI(user);
+        if (user) {
+            listenForAnnouncements();
+            loadSettingsFromCloud(); // ব্যবহারকারীর ডাটা সিঙ্ক করা
+            if(analytics) logEvent(analytics, 'user_login', { method: user.isAnonymous ? 'anonymous' : 'google' });
+        }
+    });
+
+    // Google Sign-in
+    document.getElementById('googleSignInBtn').addEventListener('click', async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+            await signInWithPopup(auth, provider);
+        } catch (error) {
+            alert("লগইন ব্যর্থ হয়েছে: " + error.message);
+        }
+    });
+
+    // Sign out
+    document.getElementById('signOutBtn').addEventListener('click', () => {
+        signOut(auth).then(() => {
+            signInAnonymously(auth); // আবার অ্যানোনিমাস ইউজার করে দেওয়া
+        });
+    });
+
+    function updateProfileUI(user) {
+        const emailDisplay = document.getElementById('userEmailDisplay');
+        const avatar = document.getElementById('userAvatar');
+        const signInBtn = document.getElementById('googleSignInBtn');
+        const signOutBtn = document.getElementById('signOutBtn');
+
+        if (user && !user.isAnonymous) {
+            emailDisplay.innerText = user.email;
+            avatar.innerHTML = `<img src="${user.photoURL}" class="w-full h-full rounded-full">`;
+            signInBtn.classList.add('hidden');
+            signOutBtn.classList.remove('hidden');
+        } else {
+            emailDisplay.innerText = "অ্যানোনিমাস ইউজার (গেস্ট)";
+            avatar.innerHTML = "G";
+            signInBtn.classList.remove('hidden');
+            signOutBtn.classList.add('hidden');
+        }
+    }
+
+    // --- ২. Cloud Settings Sync (Firestore) ---
+    window.saveSettingsToCloudManually = async function() {
+        if (!currentUser) return;
+        const username = document.getElementById('customUsername').value;
+        
+        // আপনার বিদ্যমান localStorage থেকে সেটিংস নেওয়ার লজিক (উদাহরণস্বরূপ)
+        const localSettings = {
+            theme: localStorage.getItem('theme') || 'light',
+            fontSize: localStorage.getItem('fontSize') || 'medium',
+            pinnedTools: JSON.parse(localStorage.getItem('pinnedTools') || '[]'),
+            username: username
+        };
+
+        try {
+            // Rule 1: Always use private data path /artifacts/{appId}/users/{userId}/...
+            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'preferences');
+            await setDoc(docRef, localSettings, { merge: true });
+            
+            // Show toast or alert
+            const btn = document.querySelector('button[onclick="saveSettingsToCloudManually()"]');
+            btn.innerText = "সেভ হয়েছে ✓";
+            btn.classList.add('bg-green-600');
+            setTimeout(() => {
+                btn.innerText = "সেটিংস ক্লাউডে সেভ করুন";
+                btn.classList.remove('bg-green-600');
+            }, 2000);
+        } catch (error) {
+            console.error("Error saving settings:", error);
+        }
+    };
+
+    async function loadSettingsFromCloud() {
+        if (!currentUser || !document.getElementById('cloudSyncToggle').checked) return;
+        
+        try {
+            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'preferences');
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if(data.username) document.getElementById('customUsername').value = data.username;
+                
+                // এখানে আপনার মেইন অ্যাপের সেটিংস অ্যাপ্লাই করার ফাংশন কল করতে পারেন
+                // যেমন: applyTheme(data.theme);
+                console.log("Cloud settings loaded:", data);
+            }
+        } catch (error) {
+            console.error("Error loading settings:", error);
+        }
+    }
+
+
+    // --- ৩. File Sharing / Firebase Storage ---
+    window.handleCloudFileSelect = function(event) {
+        selectedUploadFile = event.target.files[0];
+        if (selectedUploadFile) {
+            document.getElementById('cloudFileLabel').innerText = selectedUploadFile.name;
+            document.getElementById('uploadBtn').disabled = false;
+        }
+    };
+
+    window.uploadFileToFirebase = async function() {
+        if (!selectedUploadFile || !currentUser) return;
+        
+        const btn = document.getElementById('uploadBtn');
+        const progressContainer = document.getElementById('uploadProgressContainer');
+        const progressBar = document.getElementById('uploadProgressBar');
+        const resultDiv = document.getElementById('uploadResult');
+        
+        btn.disabled = true;
+        btn.innerText = "আপলোড হচ্ছে...";
+        progressContainer.classList.remove('hidden');
+        
+        try {
+            // Storage path
+            const storagePath = `artifacts/${appId}/users/${currentUser.uid}/${Date.now()}_${selectedUploadFile.name}`;
+            const storageRef = ref(storage, storagePath);
+            const uploadTask = uploadBytesResumable(storageRef, selectedUploadFile);
+
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    progressBar.style.width = progress + '%';
+                }, 
+                (error) => {
+                    console.error("Upload failed:", error);
+                    btn.innerText = "আপলোড ব্যর্থ হয়েছে";
+                    btn.disabled = false;
+                }, 
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    
+                    // Save file metadata to firestore (Optional but good practice)
+                    const docRef = doc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'files'));
+                    await setDoc(docRef, { name: selectedUploadFile.name, url: downloadURL, uploadedAt: new Date().toISOString() });
+
+                    // UI Update
+                    progressContainer.classList.add('hidden');
+                    btn.innerText = "আপলোড সফল!";
+                    resultDiv.classList.remove('hidden');
+                    document.getElementById('sharedFileLink').value = downloadURL;
+                    
+                    if(analytics) logEvent(analytics, 'file_shared', { file_type: selectedUploadFile.type });
+                }
+            );
+        } catch (error) {
+            console.error("Storage error:", error);
+        }
+    };
+
+    window.copySharedLink = function() {
+        const linkInput = document.getElementById('sharedFileLink');
+        linkInput.select();
+        document.execCommand('copy');
+        alert("লিঙ্ক কপি করা হয়েছে!");
+    };
+
+
+    // --- ৪. Global Announcements (Firestore Listener) ---
+    let announcementUnsubscribe = null;
+    function listenForAnnouncements() {
+        if(announcementUnsubscribe) announcementUnsubscribe();
+        
+        // Rule 1: Public data path
+        const annRef = collection(db, 'artifacts', appId, 'public', 'data', 'announcements');
+        
+        announcementUnsubscribe = onSnapshot(annRef, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added" || change.type === "modified") {
+                    const data = change.doc.data();
+                    if(data && data.message && data.active !== false) {
+                        showAnnouncementBanner(data.message);
+                    }
+                }
+            });
+        }, (error) => {
+            console.error("Announcement Error:", error);
+        });
+    }
+
+    window.showAnnouncementBanner = function(message) {
+        const banner = document.getElementById('globalAnnouncementBanner');
+        document.getElementById('announcementText').innerText = message;
+        banner.classList.remove('hidden', '-translate-y-full');
+    };
+
+    window.closeAnnouncement = function() {
+        const banner = document.getElementById('globalAnnouncementBanner');
+        banner.classList.add('-translate-y-full');
+        setTimeout(() => banner.classList.add('hidden'), 500);
+    };
+
+    // --- UI Toggle Functions ---
+    window.toggleProfileWindow = function() {
+        const win = document.getElementById('profileWindow');
+        document.getElementById('cloudWindow').classList.add('hidden'); // Close other window
+        win.classList.toggle('hidden');
+    };
+
+    window.toggleCloudWindow = function() {
+        const win = document.getElementById('cloudWindow');
+        document.getElementById('profileWindow').classList.add('hidden'); // Close other window
+        win.classList.toggle('hidden');
+    };
+
+</script>
+<!-- ============================================== -->
+<!-- END: FIREBASE LOGIC -->
+<!-- ============================================== -->
 
 </body>
 </html>
