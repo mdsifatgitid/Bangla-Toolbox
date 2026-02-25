@@ -32009,7 +32009,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
 </div>
 
-<!-- END: ফায়ারবেস প্রোফাইল, স্টোরেজ উইন্ডো এবং নোটিফিকেশন -->
+
 
 <script>
     // প্রোফাইল উইন্ডো টগল
@@ -32056,10 +32056,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 </script>
 
+<!-- END: ফায়ারবেস প্রোফাইল, স্টোরেজ উইন্ডো এবং নোটিফিকেশন -->
+
 <!-- ============================================== -->
 <!-- START: FIREBASE LOGIC (MODULE) -->
 <!-- ============================================== -->
-<!-- START: FIREBASE LOGIC (UPDATED) -->
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { 
@@ -32093,7 +32095,13 @@ document.addEventListener('DOMContentLoaded', () => {
         measurementId: "G-6NVS7YFNBX"
     };
 
-    const appId = 'bangla-toolbox.github.io'; 
+    // ডাইনামিক অ্যাপ আইডি (ডোমেইন অনুযায়ী ডাটা আলাদা হবে)
+    // লোকালহোস্টে টেস্ট করলে 'localhost' হবে, গিটহাবে হলে ডোমেইন নেম হবে
+    const appId = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
+                  ? 'bangla-toolbox.github.io' 
+                  : window.location.hostname;
+
+    console.log("Current App ID (Firestore Path):", appId);
 
     // Firebase Init
     const app = initializeApp(firebaseConfig);
@@ -32105,30 +32113,34 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedUploadFile = null;
     let inboxUnsubscribe = null;
 
-    // --- ১. অথেন্টিকেশন লজিক (ফিক্সড) ---
-    // পেজ লোড হওয়ার সাথে সাথে লগইন চেক
+    // --- ১. অথেন্টিকেশন এবং ইনিশিয়ালাইজেশন ---
     setPersistence(auth, browserLocalPersistence)
         .then(() => {
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
-                    console.log("User found:", user.uid);
+                    console.log("User Logged In:", user.uid);
                     currentUser = user;
                     updateProfileUI(user);
                     
-                    // ইউজারনেম এবং ডাটা লোড
+                    // ইউজারনেম লজিক
                     await handleAutoUsername(user);
-                    setupUsernameLogic(user);
+                    setupUsernameLogic(user); // ইউজারনেম ইনপুট এবং এডিট বাটন হ্যান্ডলিং
+                    
+                    // ইনবক্স ও উপস্থিতি
                     listenToInbox(user);
                     restoreSettingsFromCloud(user);
-                    listenForAnnouncements(); // গ্লোবাল এনাউন্সমেন্ট
-                    initializeGlobalCounter(); // ভিজিটর কাউন্টার
+                    
+                    if (typeof initializeGlobalCounter === 'function') {
+                        // গ্লোবাল ফাংশন না হলে মডিউলের ভেতরেই লজিক রাখতে হবে (নিচে আছে)
+                    }
+                    
                 } else {
                     console.log("No user, signing in anonymously...");
                     signInAnonymously(auth).catch((e) => console.error("Login Error:", e));
                 }
             });
         })
-        .catch((error) => console.error("Persistence Error:", error));
+        .catch((error) => console.error("Auth Persistence Error:", error));
 
     // Google Sign-in
     const googleBtn = document.getElementById('googleSignInBtn');
@@ -32138,7 +32150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 await signInWithPopup(auth, provider);
             } catch (error) {
-                alert("লগইন ব্যর্থ হয়েছে: " + error.message);
+                alert("লগইন সমস্যা: " + error.message);
             }
         });
     }
@@ -32151,7 +32163,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // UI আপডেট ফাংশন
     function updateProfileUI(user) {
         const nameDisplay = document.getElementById('userDisplayName');
         const emailDisplay = document.getElementById('userEmailDisplay');
@@ -32176,60 +32187,79 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- ২. অটো ইউজারনেম লজিক ---
+    // --- ২. অটোমেটিক ইউজারনেম অ্যাসাইনমেন্ট ---
     async function handleAutoUsername(user) {
         const userProfileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'profile');
-        const snap = await getDoc(userProfileRef);
-
-        if (!snap.exists() || !snap.data().username) {
-            const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'global_stats');
-            try {
+        
+        try {
+            const snap = await getDoc(userProfileRef);
+            
+            // যদি আগে থেকে ইউজারনেম সেট করা না থাকে
+            if (!snap.exists() || !snap.data().username) {
+                const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'global_stats');
+                
                 await runTransaction(db, async (transaction) => {
                     const statsDoc = await transaction.get(statsRef);
                     let newCount = 1;
                     if (statsDoc.exists()) {
                         newCount = (statsDoc.data().user_count || 0) + 1;
                     }
+
                     const newUsername = `@${newCount}`;
                     
+                    // ১. গ্লোবাল কাউন্টার আপডেট
                     transaction.set(statsRef, { user_count: newCount }, { merge: true });
+                    
+                    // ২. ইউজারের প্রোফাইলে সেভ
                     transaction.set(userProfileRef, { username: newUsername }, { merge: true });
                     
-                    // পাবলিক সার্চের জন্য
+                    // ৩. পাবলিক সার্চের জন্য সেভ
                     const publicNameRef = doc(db, 'artifacts', appId, 'public', 'data', 'usernames', newUsername.toLowerCase());
                     transaction.set(publicNameRef, { uid: user.uid, email: user.email || null });
+                    
+                    console.log(`New Username Assigned: ${newUsername}`);
                 });
-            } catch (e) { console.error("Username Auto-assign Error:", e); }
+            }
+        } catch (e) {
+            console.error("Auto Username Error:", e);
         }
     }
 
-    // --- ৩. ইউজারনেম এডিট ---
+    // --- ৩. ইউজারনেম ডিসপ্লে এবং এডিট লজিক ---
     const usernameInput = document.getElementById('customUsername');
     const saveUsernameBtn = document.getElementById('saveUsernameBtn');
     const editUsernameBtn = document.getElementById('editUsernameBtn');
     const usernameStatus = document.getElementById('usernameStatus');
-    let debounceTimer;
 
     function setupUsernameLogic(user) {
         const userProfileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'profile');
         
+        // রিয়েলটাইম লিসেনার: ডাটাবেসে চেঞ্জ হলে ইনপুটে আপডেট হবে
         onSnapshot(userProfileRef, (snap) => {
             if (snap.exists() && snap.data().username) {
-                if(usernameInput) usernameInput.value = snap.data().username;
-                lockUsernameInput();
+                if(usernameInput) {
+                    usernameInput.value = snap.data().username;
+                    lockUsernameInput(); // ইউজারনেম পেলে ইনপুট লক করে দিন
+                }
             }
         });
 
+        // এডিট বাটন ক্লিক
         if(editUsernameBtn) {
-            editUsernameBtn.addEventListener('click', () => {
+            editUsernameBtn.onclick = () => {
                 unlockUsernameInput();
-                if(usernameStatus) usernameStatus.textContent = "নতুন নাম @ দিয়ে শুরু করুন";
-            });
+                if(usernameStatus) {
+                    usernameStatus.textContent = "নতুন নাম @ দিয়ে শুরু করুন (যেমন: @sifat)";
+                    usernameStatus.className = "text-xs mt-1 h-4 text-blue-500";
+                }
+            };
         }
 
+        // সেভ বাটন ক্লিক
         if(saveUsernameBtn) {
-            saveUsernameBtn.addEventListener('click', async () => {
+            saveUsernameBtn.onclick = async () => {
                 let newName = usernameInput.value.trim().toLowerCase();
+                // @ না থাকলে যোগ করুন
                 if (!newName.startsWith('@')) newName = '@' + newName;
                 
                 if (newName.length < 4) {
@@ -32237,6 +32267,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
+                // ডুপ্লিকেট চেক
                 const publicNameRef = doc(db, 'artifacts', appId, 'public', 'data', 'usernames', newName);
                 const nameSnap = await getDoc(publicNameRef);
 
@@ -32245,23 +32276,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // ডিলিট ও আপডেট একসাথে
+                // আগের নাম ডিলিট এবং নতুন নাম সেভ
                 const currentProfile = await getDoc(userProfileRef);
+                const batch = writeBatch(db);
+
                 if(currentProfile.exists() && currentProfile.data().username) {
                     const oldName = currentProfile.data().username;
                     if(oldName !== newName) {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'usernames', oldName));
+                        batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'usernames', oldName));
                     }
                 }
 
-                const batch = writeBatch(db);
                 batch.set(publicNameRef, { uid: user.uid, email: user.email || null });
                 batch.set(userProfileRef, { username: newName }, { merge: true });
                 
-                await batch.commit();
-                showCustomAlert("ইউজারনেম পরিবর্তন করা হয়েছে!");
-                lockUsernameInput();
-            });
+                try {
+                    await batch.commit();
+                    showCustomAlert("ইউজারনেম সফলভাবে পরিবর্তন হয়েছে!");
+                    lockUsernameInput();
+                    if(usernameStatus) usernameStatus.textContent = "";
+                } catch(e) {
+                    showCustomAlert("সেভ করা যায়নি: " + e.message);
+                }
+            };
         }
     }
 
@@ -32270,6 +32307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(saveUsernameBtn) saveUsernameBtn.classList.add('hidden');
         if(editUsernameBtn) editUsernameBtn.classList.remove('hidden');
     }
+    
     function unlockUsernameInput() {
         if(usernameInput) {
             usernameInput.disabled = false;
@@ -32279,7 +32317,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(editUsernameBtn) editUsernameBtn.classList.add('hidden');
     }
 
-    // --- ৪. ফাইল আপলোড লজিক (HTML onclick এর জন্য উইন্ডোতে অ্যাসাইন) ---
+    // --- ৪. ফাইল আপলোড লজিক (Global Scope এ ফাংশন দেওয়া) ---
     window.handleCloudFileSelect = function(event) {
         selectedUploadFile = event.target.files[0];
         if (selectedUploadFile) {
@@ -32291,10 +32329,10 @@ document.addEventListener('DOMContentLoaded', () => {
     window.uploadFileToFirebase = async function() {
         const recipientText = document.getElementById('recipientInput').value.trim();
         
-        if (!selectedUploadFile) return showCustomAlert("ফাইল নির্বাচন করুন।");
+        if (!selectedUploadFile) return showCustomAlert("অনুগ্রহ করে একটি ফাইল নির্বাচন করুন।");
         if (!recipientText) {
              document.getElementById('recipientInput').focus();
-             return showCustomAlert("প্রাপকের ইউজারনেম দিন (যেমন @1)।");
+             return showCustomAlert("যাকে পাঠাবেন তার ইউজারনেম (@...) বা ইমেইল লিখুন।");
         }
 
         const btn = document.getElementById('uploadBtn');
@@ -32307,11 +32345,13 @@ document.addEventListener('DOMContentLoaded', () => {
         progressContainer.classList.remove('hidden');
 
         try {
-            // প্রাপক খোঁজা
+            // ১. প্রাপক খোঁজা
             let recipientUID = null;
             let queryText = recipientText.toLowerCase();
-            
+
+            // ইউজারনেম চেক
             let usernameDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'usernames', queryText));
+            // যদি ইউজার @ না দেয়, তবুও চেক করা
             if (!usernameDoc.exists() && !queryText.startsWith('@')) {
                  usernameDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'usernames', '@' + queryText));
             }
@@ -32319,10 +32359,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (usernameDoc.exists()) {
                 recipientUID = usernameDoc.data().uid;
             } else {
-                throw new Error("ব্যবহারকারী পাওয়া যায়নি। সঠিক ইউজারনেম দিন (যেমন @1)");
+                throw new Error("ব্যবহারকারী পাওয়া যায়নি। সঠিক ইউজারনেম দিন (যেমন @1)।");
             }
 
-            // আপলোড
+            // ২. ফাইল আপলোড
             const storagePath = `artifacts/${appId}/shared_files/${Date.now()}_${selectedUploadFile.name}`;
             const storageRef = ref(storage, storagePath);
             const uploadTask = uploadBytesResumable(storageRef, selectedUploadFile);
@@ -32336,15 +32376,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 async () => {
                     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                     
-                    // ইনবক্সে পাঠানো
+                    // ৩. প্রাপকের ইনবক্সে এন্ট্রি তৈরি (রুলস আপডেট করার পর এটি কাজ করবে)
                     const inboxRef = collection(db, 'artifacts', appId, 'users', recipientUID, 'inbox');
-                    // সেন্ডারের নাম বের করা
+                    
                     let senderName = "Anonymous";
-                    if (currentUser.displayName) senderName = currentUser.displayName;
-                    else {
-                        const myProfile = await getDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'profile'));
-                        if (myProfile.exists()) senderName = myProfile.data().username;
-                    }
+                    // নিজের ইউজারনেম বের করা
+                    const myProfile = await getDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'profile'));
+                    if (myProfile.exists()) senderName = myProfile.data().username;
 
                     await addDoc(inboxRef, {
                         senderName: senderName,
@@ -32354,8 +32392,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         read: false
                     });
                     
-                    btn.innerText = "পাঠানো হয়েছে!";
-                    showCustomAlert(`ফাইলটি ${recipientText}-কে পাঠানো হয়েছে।`);
+                    btn.innerText = "সফল!";
+                    showCustomAlert(`ফাইলটি সফলভাবে ${recipientText}-কে পাঠানো হয়েছে!`);
                     
                     // রিসেট
                     setTimeout(() => { 
@@ -32371,20 +32409,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("Upload Error:", error);
-            showCustomAlert(error.message);
+            showCustomAlert(error.message); // কাস্টম এলার্ট
             btn.disabled = false;
             btn.innerText = "পাঠান";
             progressContainer.classList.add('hidden');
         }
     };
     
-    // লিঙ্ক কপি ফাংশন
+    // লিঙ্ক কপি ফাংশন (যদি প্রয়োজন হয়)
     window.copySharedLink = function() {
         const linkInput = document.getElementById('sharedFileLink');
         if(linkInput) {
             linkInput.select();
             document.execCommand('copy');
-            alert("লিঙ্ক কপি করা হয়েছে!");
+            showCustomAlert("লিঙ্ক কপি করা হয়েছে!");
         }
     };
 
@@ -32410,7 +32448,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 item.innerHTML = `
                     <div class="overflow-hidden">
                         <p class="font-bold truncate text-gray-800 dark:text-gray-200">${d.fileName}</p>
-                        <p class="text-[10px] text-gray-500">From: ${d.senderName} • ${time}</p>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-300">From: ${d.senderName} • ${time}</p>
                     </div>
                     <div class="flex gap-1">
                         <a href="${d.fileUrl}" target="_blank" class="p-1 bg-green-500 text-white rounded text-xs">⬇</a>
@@ -32422,6 +32460,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ইনবক্স ডিলিট ফাংশন
     window.deleteInboxItem = async function(id) {
         if(!currentUser) return;
         if(confirm("মুছে ফেলতে চান?")) {
@@ -32429,50 +32468,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- ৬. ভিজিটর কাউন্টার ---
-    async function initializeGlobalCounter() {
-        if (!currentUser) return;
-        const todayString = new Date().toISOString().split('T')[0];
-        const counterDocRef = doc(db, "artifacts", appId, "public", "data", "global_visitor_stats", "counts");
-
-        // ভিজিট কাউন্ট বাড়ানো (সেশনে একবার)
-        if (!sessionStorage.getItem('globalVisitCounted')) {
-            try {
-                await runTransaction(db, async (transaction) => {
-                    const counterDoc = await transaction.get(counterDocRef);
-                    if (!counterDoc.exists()) {
-                        transaction.set(counterDocRef, { totalVisits: 1, dailyVisits: { [todayString]: 1 } });
-                    } else {
-                        const data = counterDoc.data();
-                        const newTotal = (data.totalVisits || 0) + 1;
-                        const newDaily = ((data.dailyVisits || {})[todayString] || 0) + 1;
-                        transaction.update(counterDocRef, {
-                            totalVisits: newTotal,
-                            [`dailyVisits.${todayString}`]: newDaily
-                        });
-                    }
-                });
-                sessionStorage.setItem('globalVisitCounted', 'true');
-            } catch (e) { console.error("Counter Error:", e); }
-        }
-
-        // লাইভ আপডেট দেখা
-        onSnapshot(counterDocRef, (doc) => {
-            const allToday = document.getElementById('all-today-visits');
-            const allTotal = document.getElementById('all-total-visits');
-            if (doc.exists()) {
-                const data = doc.data();
-                if (allTotal) allTotal.textContent = (data.totalVisits || 0).toLocaleString('bn-BD');
-                if (allToday) allToday.textContent = ((data.dailyVisits || {})[todayString] || 0).toLocaleString('bn-BD');
-            }
-        });
-    }
-
-    // --- ৭. সেটিংস ব্যাকআপ ও রিস্টোর ---
+    // --- ৬. ক্লাউড ব্যাকআপ এবং রিস্টোর ---
+    
+    // ম্যানুয়াল ব্যাকআপ বাটন লজিক (HTML থেকে কল হবে)
     window.saveSettingsToCloudManually = async function() {
         if (!currentUser) return showCustomAlert("লগইন করা নেই।");
-        showCustomAlert("ব্যাকআপ তৈরি হচ্ছে...");
+        
+        showCustomAlert("ব্যাকআপ তৈরি হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন।");
+        
         try {
+            // লোকাল স্টোরেজ ডাটা ব্যাকআপ
             const backupData = {
                 timestamp: new Date().toISOString(),
                 localStorage: { ...localStorage }
@@ -32482,19 +32487,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const backupRef = ref(storage, `artifacts/${appId}/users/${currentUser.uid}/backup/settings_backup.json`);
             await uploadBytesResumable(backupRef, blob);
-            showCustomAlert("সেটিংস সফলভাবে ক্লাউডে সেভ হয়েছে!");
+
+            showCustomAlert("ব্যাকআপ সফল হয়েছে! ✅"); // সফল মেসেজ
+
         } catch (e) {
-            console.error(e);
+            console.error("Cloud Backup Error:", e);
             showCustomAlert("ব্যাকআপ ব্যর্থ হয়েছে।");
         }
     };
 
+    // অটোমেটিক রিস্টোর (লগইনের সময়)
     async function restoreSettingsFromCloud(user) {
         try {
             const backupRef = ref(storage, `artifacts/${appId}/users/${user.uid}/backup/settings_backup.json`);
-            // ফাইল আছে কিনা চেক করতে আগে URL নিচ্ছি
-            await getDownloadURL(backupRef); 
             
+            // ফাইল চেক
+            await getDownloadURL(backupRef);
+            
+            // ডাউনলোড
             const blob = await getBytes(backupRef);
             const text = new TextDecoder().decode(blob);
             const data = JSON.parse(text);
@@ -32502,34 +32512,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.localStorage) {
                 console.log("Restoring cloud settings...");
                 Object.keys(data.localStorage).forEach(key => {
-                    // API key বা ক্রিটিক্যাল কিছু ওভাররাইট এড়াতে চাইলে এখানে চেক বসান
-                    localStorage.setItem(key, data.localStorage[key]);
+                    // API Key বা ক্রিটিক্যাল কিছু ওভাররাইট এড়াতে চাইলে এখানে চেক বসান
+                    if(key !== 'geminiApiKey') { 
+                        localStorage.setItem(key, data.localStorage[key]);
+                    }
                 });
-                showCustomAlert("ক্লাউড থেকে সেটিংস সিঙ্ক করা হয়েছে।");
+                showCustomAlert("ক্লাউড থেকে সেটিংস সফলভাবে সিঙ্ক করা হয়েছে!");
             }
         } catch (error) {
-            // ফাইল না থাকলে বা এরর হলে চুপচাপ থাকবে
+            // ব্যাকআপ না থাকলে এরর ইগনোর করুন
             if (error.code !== 'storage/object-not-found') {
                 console.error("Restore Error:", error);
             }
         }
     }
-
-    // --- ৮. গ্লোবাল এনাউন্সমেন্ট ---
-    function listenForAnnouncements() {
-        const annRef = collection(db, 'artifacts', appId, 'public', 'data', 'announcements');
-        onSnapshot(annRef, (snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === "added" || change.type === "modified") {
-                    const data = change.doc.data();
-                    if(data && data.message && data.active !== false && window.showAnnouncementBanner) {
-                        window.showAnnouncementBanner(data.message);
-                    }
-                }
-            });
-        });
-    }
-
 </script>
 <!-- ============================================== -->
 <!-- END: FIREBASE LOGIC -->
