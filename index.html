@@ -32113,31 +32113,33 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedUploadFile = null;
     let inboxUnsubscribe = null;
 
-// --- ১. অথেন্টিকেশন এবং ইনিশিয়ালাইজেশন ---
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            console.log("User Logged In:", user.uid);
-            currentUser = user;
-            updateProfileUI(user);
-            
-            // ইউজারনেম লজিক
-            await handleAutoUsername(user);
-            setupUsernameLogic(user); 
-            
-            // ইনবক্স ও উপস্থিতি
-            listenToInbox(user);
-            restoreSettingsFromCloud(user);
-            
-        } else {
-            // শুধুমাত্র গুগল লগইন পপআপ না খোলা থাকলে এবং ইউজার না থাকলেই গেস্ট লগইন হবে
-            console.log("No user, signing in anonymously...");
-            try {
-                await signInAnonymously(auth);
-            } catch (e) {
-                console.error("Anonymous Login Error:", e);
-            }
-        }
-    });
+    // --- ১. অথেন্টিকেশন এবং ইনিশিয়ালাইজেশন ---
+    setPersistence(auth, browserLocalPersistence)
+        .then(() => {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    console.log("User Logged In:", user.uid);
+                    currentUser = user;
+                    updateProfileUI(user);
+                    
+                    // ইউজারনেম লজিক
+                    await handleAutoUsername(user);
+                    setupUsernameLogic(user); // ইউজারনেম ইনপুট এবং এডিট বাটন হ্যান্ডলিং
+                    
+                    // ইনবক্স ও উপস্থিতি
+                    listenToInbox(user);
+                    restoreSettingsFromCloud(user);
+                    
+                    if (typeof initializeGlobalCounter === 'function') {
+                        // গ্লোবাল ফাংশন না হলে মডিউলের ভেতরেই লজিক রাখতে হবে (নিচে আছে)
+                    }
+                    
+                } else {
+                    console.log("No user, signing in anonymously...");
+                    signInAnonymously(auth).catch((e) => console.error("Login Error:", e));
+                }
+            });
+        })
         .catch((error) => console.error("Auth Persistence Error:", error));
 
     // Google Sign-in
