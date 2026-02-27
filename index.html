@@ -32070,33 +32070,25 @@ document.addEventListener('DOMContentLoaded', () => {
         GoogleAuthProvider, 
         signInWithPopup, 
         onAuthStateChanged, 
-        signOut, 
-        setPersistence, 
-        browserLocalPersistence 
+        signOut
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { 
         getFirestore, doc, setDoc, getDoc, collection, onSnapshot, 
         query, where, getDocs, writeBatch, orderBy, deleteDoc, 
         serverTimestamp, addDoc, runTransaction 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    import { 
-        getStorage, ref, uploadBytesResumable, getDownloadURL, 
-        getBytes 
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
     // কনফিগারেশন
     const firebaseConfig = {
         apiKey: "AIzaSyBmTptSZWbNB5MrT8jIWVm6knak2L2Xv40",
         authDomain: "bangla-toolbox1.firebaseapp.com",
         projectId: "bangla-toolbox1",
-        storageBucket: "bangla-toolbox1.firebasestorage.app",
         messagingSenderId: "345647713379",
         appId: "1:345647713379:web:d3e121c3a7e258b971bc56",
         measurementId: "G-6NVS7YFNBX"
     };
 
-    // ডাইনামিক অ্যাপ আইডি (ডোমেইন অনুযায়ী ডাটা আলাদা হবে)
-    // লোকালহোস্টে টেস্ট করলে 'localhost' হবে, গিটহাবে হলে ডোমেইন নেম হবে
+    // ডাইনামিক অ্যাপ আইডি
     const appId = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
                   ? 'bangla-toolbox.github.io' 
                   : window.location.hostname;
@@ -32107,40 +32099,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const storage = getStorage(app);
 
     let currentUser = null;
     let selectedUploadFile = null;
     let inboxUnsubscribe = null;
 
-    // --- ১. অথেন্টিকেশন এবং ইনিশিয়ালাইজেশন ---
-    setPersistence(auth, browserLocalPersistence)
-        .then(() => {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    console.log("User Logged In:", user.uid);
-                    currentUser = user;
-                    updateProfileUI(user);
-                    
-                    // ইউজারনেম লজিক
-                    await handleAutoUsername(user);
-                    setupUsernameLogic(user); // ইউজারনেম ইনপুট এবং এডিট বাটন হ্যান্ডলিং
-                    
-                    // ইনবক্স ও উপস্থিতি
-                    listenToInbox(user);
-                    restoreSettingsFromCloud(user);
-                    
-                    if (typeof initializeGlobalCounter === 'function') {
-                        // গ্লোবাল ফাংশন না হলে মডিউলের ভেতরেই লজিক রাখতে হবে (নিচে আছে)
-                    }
-                    
-                } else {
-                    console.log("No user, signing in anonymously...");
-                    signInAnonymously(auth).catch((e) => console.error("Login Error:", e));
-                }
-            });
-        })
-        .catch((error) => console.error("Auth Persistence Error:", error));
+    // --- ১. অথেন্টিকেশন এবং ইনিশিয়ালাইজেশন (বাগ ফিক্সড) ---
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            console.log("User Logged In:", user.uid);
+            currentUser = user;
+            updateProfileUI(user);
+            
+            // ইউজারনেম লজিক
+            await handleAutoUsername(user);
+            setupUsernameLogic(user); 
+            
+            // ইনবক্স ও উপস্থিতি
+            listenToInbox(user);
+            restoreSettingsFromCloud(user);
+            
+        } else {
+            console.log("No user, signing in anonymously...");
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Anonymous Login Error:", error);
+            }
+        }
+    });
 
     // Google Sign-in
     const googleBtn = document.getElementById('googleSignInBtn');
@@ -32190,39 +32177,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- ২. অটোমেটিক ইউজারনেম অ্যাসাইনমেন্ট ---
     async function handleAutoUsername(user) {
         const userProfileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'profile');
-        
         try {
             const snap = await getDoc(userProfileRef);
-            
-            // যদি আগে থেকে ইউজারনেম সেট করা না থাকে
             if (!snap.exists() || !snap.data().username) {
                 const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'global_stats');
-                
                 await runTransaction(db, async (transaction) => {
                     const statsDoc = await transaction.get(statsRef);
                     let newCount = 1;
                     if (statsDoc.exists()) {
                         newCount = (statsDoc.data().user_count || 0) + 1;
                     }
-
                     const newUsername = `@${newCount}`;
                     
-                    // ১. গ্লোবাল কাউন্টার আপডেট
                     transaction.set(statsRef, { user_count: newCount }, { merge: true });
-                    
-                    // ২. ইউজারের প্রোফাইলে সেভ
                     transaction.set(userProfileRef, { username: newUsername }, { merge: true });
                     
-                    // ৩. পাবলিক সার্চের জন্য সেভ
                     const publicNameRef = doc(db, 'artifacts', appId, 'public', 'data', 'usernames', newUsername.toLowerCase());
                     transaction.set(publicNameRef, { uid: user.uid, email: user.email || null });
-                    
-                    console.log(`New Username Assigned: ${newUsername}`);
                 });
             }
-        } catch (e) {
-            console.error("Auto Username Error:", e);
-        }
+        } catch (e) { console.error("Auto Username Error:", e); }
     }
 
     // --- ৩. ইউজারনেম ডিসপ্লে এবং এডিট লজিক ---
@@ -32234,49 +32208,38 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupUsernameLogic(user) {
         const userProfileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'profile');
         
-        // রিয়েলটাইম লিসেনার: ডাটাবেসে চেঞ্জ হলে ইনপুটে আপডেট হবে
         onSnapshot(userProfileRef, (snap) => {
             if (snap.exists() && snap.data().username) {
                 if(usernameInput) {
                     usernameInput.value = snap.data().username;
-                    lockUsernameInput(); // ইউজারনেম পেলে ইনপুট লক করে দিন
+                    lockUsernameInput();
                 }
             }
         });
 
-        // এডিট বাটন ক্লিক
         if(editUsernameBtn) {
             editUsernameBtn.onclick = () => {
                 unlockUsernameInput();
                 if(usernameStatus) {
-                    usernameStatus.textContent = "নতুন নাম @ দিয়ে শুরু করুন (যেমন: @sifat)";
+                    usernameStatus.textContent = "নতুন নাম @ দিয়ে শুরু করুন";
                     usernameStatus.className = "text-xs mt-1 h-4 text-blue-500";
                 }
             };
         }
 
-        // সেভ বাটন ক্লিক
         if(saveUsernameBtn) {
             saveUsernameBtn.onclick = async () => {
                 let newName = usernameInput.value.trim().toLowerCase();
-                // @ না থাকলে যোগ করুন
                 if (!newName.startsWith('@')) newName = '@' + newName;
-                
-                if (newName.length < 4) {
-                    showCustomAlert("ইউজারনেম অন্তত ৩ অক্ষরের হতে হবে (@ বাদে)");
-                    return;
-                }
+                if (newName.length < 4) return showCustomAlert("ইউজারনেম অন্তত ৩ অক্ষরের হতে হবে");
 
-                // ডুপ্লিকেট চেক
                 const publicNameRef = doc(db, 'artifacts', appId, 'public', 'data', 'usernames', newName);
                 const nameSnap = await getDoc(publicNameRef);
 
                 if (nameSnap.exists() && nameSnap.data().uid !== user.uid) {
-                    showCustomAlert("এই নামটি অন্য কেউ ব্যবহার করছে।");
-                    return;
+                    return showCustomAlert("এই নামটি অন্য কেউ ব্যবহার করছে।");
                 }
 
-                // আগের নাম ডিলিট এবং নতুন নাম সেভ
                 const currentProfile = await getDoc(userProfileRef);
                 const batch = writeBatch(db);
 
@@ -32295,9 +32258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     showCustomAlert("ইউজারনেম সফলভাবে পরিবর্তন হয়েছে!");
                     lockUsernameInput();
                     if(usernameStatus) usernameStatus.textContent = "";
-                } catch(e) {
-                    showCustomAlert("সেভ করা যায়নি: " + e.message);
-                }
+                } catch(e) { showCustomAlert("সেভ করা যায়নি: " + e.message); }
             };
         }
     }
@@ -32317,41 +32278,42 @@ document.addEventListener('DOMContentLoaded', () => {
         if(editUsernameBtn) editUsernameBtn.classList.add('hidden');
     }
 
-    // --- ৪. ফাইল আপলোড লজিক (Global Scope এ ফাংশন দেওয়া) ---
+    // --- ৪. ফাইল আপলোড লজিক (সরাসরি ডাটাবেস / Base64 পদ্ধতি) ---
     window.handleCloudFileSelect = function(event) {
-        selectedUploadFile = event.target.files[0];
-        if (selectedUploadFile) {
-            document.getElementById('cloudFileLabel').innerText = selectedUploadFile.name;
+        const file = event.target.files[0];
+        if (file) {
+            // ৭০০ KB এর বেশি হলে ব্লক করবে (Firestore Limit)
+            if(file.size > 700 * 1024) {
+                showCustomAlert("ফাইল সাইজ ৭০০ কেবি (700 KB) এর বেশি হতে পারবে না।");
+                event.target.value = '';
+                return;
+            }
+            selectedUploadFile = file;
+            document.getElementById('cloudFileLabel').innerText = file.name;
             document.getElementById('uploadBtn').disabled = false;
         }
     };
 
     window.uploadFileToFirebase = async function() {
         const recipientText = document.getElementById('recipientInput').value.trim();
-        
         if (!selectedUploadFile) return showCustomAlert("অনুগ্রহ করে একটি ফাইল নির্বাচন করুন।");
-        if (!recipientText) {
-             document.getElementById('recipientInput').focus();
-             return showCustomAlert("যাকে পাঠাবেন তার ইউজারনেম (@...) বা ইমেইল লিখুন।");
-        }
+        if (!recipientText) return showCustomAlert("যাকে পাঠাবেন তার ইউজারনেম (@...) বা ইমেইল লিখুন।");
 
         const btn = document.getElementById('uploadBtn');
         const progressBar = document.getElementById('uploadProgressBar');
         const progressContainer = document.getElementById('uploadProgressContainer');
-        const resultDiv = document.getElementById('uploadResult');
         
         btn.disabled = true;
-        btn.innerText = "আপলোড হচ্ছে...";
+        btn.innerText = "প্রসেসিং...";
         progressContainer.classList.remove('hidden');
+        progressBar.style.width = '50%'; // ফেক প্রোগ্রেস
 
         try {
             // ১. প্রাপক খোঁজা
             let recipientUID = null;
             let queryText = recipientText.toLowerCase();
 
-            // ইউজারনেম চেক
             let usernameDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'usernames', queryText));
-            // যদি ইউজার @ না দেয়, তবুও চেক করা
             if (!usernameDoc.exists() && !queryText.startsWith('@')) {
                  usernameDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'usernames', '@' + queryText));
             }
@@ -32359,74 +32321,58 @@ document.addEventListener('DOMContentLoaded', () => {
             if (usernameDoc.exists()) {
                 recipientUID = usernameDoc.data().uid;
             } else {
-                throw new Error("ব্যবহারকারী পাওয়া যায়নি। সঠিক ইউজারনেম দিন (যেমন @1)।");
+                throw new Error("ব্যবহারকারী পাওয়া যায়নি। সঠিক ইউজারনেম দিন।");
             }
 
-            // ২. ফাইল আপলোড
-            const storagePath = `artifacts/${appId}/shared_files/${Date.now()}_${selectedUploadFile.name}`;
-            const storageRef = ref(storage, storagePath);
-            const uploadTask = uploadBytesResumable(storageRef, selectedUploadFile);
-
-            uploadTask.on('state_changed', 
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    progressBar.style.width = progress + '%';
-                }, 
-                (error) => { throw error; }, 
-                async () => {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    
-                    // ৩. প্রাপকের ইনবক্সে এন্ট্রি তৈরি (রুলস আপডেট করার পর এটি কাজ করবে)
-                    const inboxRef = collection(db, 'artifacts', appId, 'users', recipientUID, 'inbox');
-                    
-                    let senderName = "Anonymous";
-                    // নিজের ইউজারনেম বের করা
-                    const myProfile = await getDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'profile'));
-                    if (myProfile.exists()) senderName = myProfile.data().username;
-
-                    await addDoc(inboxRef, {
-                        senderName: senderName,
-                        fileName: selectedUploadFile.name,
-                        fileUrl: downloadURL,
-                        timestamp: serverTimestamp(),
-                        read: false
-                    });
-                    
-                    btn.innerText = "সফল!";
-                    showCustomAlert(`ফাইলটি সফলভাবে ${recipientText}-কে পাঠানো হয়েছে!`);
-                    
-                    // রিসেট
-                    setTimeout(() => { 
-                        btn.innerText = "পাঠান"; 
-                        btn.disabled = false; 
-                        progressContainer.classList.add('hidden');
-                        progressBar.style.width = '0%';
-                        selectedUploadFile = null;
-                        document.getElementById('cloudFileLabel').innerText = "ফাইল বাছুন";
-                    }, 3000);
+            // ২. ফাইলকে Base64 এ রূপান্তর এবং সেন্ড
+            const reader = new FileReader();
+            reader.readAsDataURL(selectedUploadFile); // Convert to Base64 String
+            
+            reader.onload = async () => {
+                const base64Data = reader.result; 
+                const inboxRef = collection(db, 'artifacts', appId, 'users', recipientUID, 'inbox');
+                
+                let senderName = "Anonymous";
+                const myProfile = await getDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'profile'));
+                if (myProfile.exists() && myProfile.data().username) {
+                    senderName = myProfile.data().username;
                 }
-            );
+
+                await addDoc(inboxRef, {
+                    senderName: senderName,
+                    fileName: selectedUploadFile.name,
+                    fileData: base64Data, // URL এর বদলে সরাসরি ডেটা
+                    timestamp: serverTimestamp(),
+                    read: false
+                });
+                
+                progressBar.style.width = '100%';
+                btn.innerText = "সফল!";
+                showCustomAlert(`ফাইলটি সফলভাবে পাঠানো হয়েছে!`);
+                
+                setTimeout(() => { 
+                    btn.innerText = "পাঠান"; 
+                    btn.disabled = false; 
+                    progressContainer.classList.add('hidden');
+                    progressBar.style.width = '0%';
+                    selectedUploadFile = null;
+                    document.getElementById('cloudFileLabel').innerText = "ফাইল বাছুন";
+                    document.getElementById('cloudFileInput').value = '';
+                }, 3000);
+            };
+
+            reader.onerror = () => { throw new Error("ফাইল রিড করতে সমস্যা হয়েছে।"); };
 
         } catch (error) {
             console.error("Upload Error:", error);
-            showCustomAlert(error.message); // কাস্টম এলার্ট
+            showCustomAlert(error.message); 
             btn.disabled = false;
             btn.innerText = "পাঠান";
             progressContainer.classList.add('hidden');
         }
     };
-    
-    // লিঙ্ক কপি ফাংশন (যদি প্রয়োজন হয়)
-    window.copySharedLink = function() {
-        const linkInput = document.getElementById('sharedFileLink');
-        if(linkInput) {
-            linkInput.select();
-            document.execCommand('copy');
-            showCustomAlert("লিঙ্ক কপি করা হয়েছে!");
-        }
-    };
 
-    // --- ৫. ইনবক্স লিসেনার ---
+    // --- ৫. ইনবক্স লিসেনার (Base64 ডাউনলোড সাপোর্ট) ---
     function listenToInbox(user) {
         if (inboxUnsubscribe) inboxUnsubscribe();
         const inboxRef = collection(db, 'artifacts', appId, 'users', user.uid, 'inbox');
@@ -32445,14 +32391,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const time = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleTimeString() : '';
                 const item = document.createElement('div');
                 item.className = "bg-white dark:bg-gray-600 p-2 rounded shadow-sm border flex justify-between";
+                
+                // ডাউনলোড লিংকে সরাসরি Base64 Data URL দিয়ে দেওয়া হয়েছে
                 item.innerHTML = `
-                    <div class="overflow-hidden">
-                        <p class="font-bold truncate text-gray-800 dark:text-gray-200">${d.fileName}</p>
+                    <div class="overflow-hidden" style="width: 70%;">
+                        <p class="font-bold truncate text-gray-800 dark:text-gray-200" title="${d.fileName}">${d.fileName}</p>
                         <p class="text-[10px] text-gray-500 dark:text-gray-300">From: ${d.senderName} • ${time}</p>
                     </div>
-                    <div class="flex gap-1">
-                        <a href="${d.fileUrl}" target="_blank" class="p-1 bg-green-500 text-white rounded text-xs">⬇</a>
-                        <button onclick="deleteInboxItem('${docSnap.id}')" class="p-1 bg-red-400 text-white rounded text-xs">X</button>
+                    <div class="flex gap-1 items-center">
+                        <a href="${d.fileData}" download="${d.fileName}" class="p-1 px-2 bg-green-500 text-white rounded text-xs hover:bg-green-600">⬇ ডাউনলোড</a>
+                        <button onclick="deleteInboxItem('${docSnap.id}')" class="p-1 px-2 bg-red-400 text-white rounded text-xs hover:bg-red-500">X</button>
                     </div>
                 `;
                 list.appendChild(item);
@@ -32460,7 +32408,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ইনবক্স ডিলিট ফাংশন
     window.deleteInboxItem = async function(id) {
         if(!currentUser) return;
         if(confirm("মুছে ফেলতে চান?")) {
@@ -32468,27 +32415,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- ৬. ক্লাউড ব্যাকআপ এবং রিস্টোর ---
-    
-    // ম্যানুয়াল ব্যাকআপ বাটন লজিক (HTML থেকে কল হবে)
+    // --- ৬. ক্লাউড ব্যাকআপ এবং রিস্টোর (ডাটাবেস দিয়ে) ---
     window.saveSettingsToCloudManually = async function() {
         if (!currentUser) return showCustomAlert("লগইন করা নেই।");
-        
         showCustomAlert("ব্যাকআপ তৈরি হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন।");
         
         try {
-            // লোকাল স্টোরেজ ডাটা ব্যাকআপ
-            const backupData = {
-                timestamp: new Date().toISOString(),
-                localStorage: { ...localStorage }
-            };
-            const jsonString = JSON.stringify(backupData);
-            const blob = new Blob([jsonString], { type: "application/json" });
+            // লোকাল স্টোরেজকে স্ট্রিংয়ে রূপান্তর করে ডাটাবেসে রাখা
+            const backupData = JSON.stringify({ ...localStorage });
+            
+            // সাইজ চেক (স্ট্রিং সাইজ ~১ এমবির কম হতে হবে)
+            if(backupData.length > 900000) {
+                return showCustomAlert("আপনার সেটিংসের পরিমাণ অনেক বেশি, ক্লাউডে সেভ করা সম্ভব হচ্ছে না।");
+            }
 
-            const backupRef = ref(storage, `artifacts/${appId}/users/${currentUser.uid}/backup/settings_backup.json`);
-            await uploadBytesResumable(backupRef, blob);
+            const backupRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'backup', 'settings');
+            await setDoc(backupRef, {
+                timestamp: serverTimestamp(),
+                data: backupData
+            });
 
-            showCustomAlert("ব্যাকআপ সফল হয়েছে! ✅"); // সফল মেসেজ
+            showCustomAlert("ব্যাকআপ সফল হয়েছে! ✅"); 
 
         } catch (e) {
             console.error("Cloud Backup Error:", e);
@@ -32496,34 +32443,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // অটোমেটিক রিস্টোর (লগইনের সময়)
     async function restoreSettingsFromCloud(user) {
         try {
-            const backupRef = ref(storage, `artifacts/${appId}/users/${user.uid}/backup/settings_backup.json`);
+            const backupRef = doc(db, 'artifacts', appId, 'users', user.uid, 'backup', 'settings');
+            const snap = await getDoc(backupRef);
             
-            // ফাইল চেক
-            await getDownloadURL(backupRef);
-            
-            // ডাউনলোড
-            const blob = await getBytes(backupRef);
-            const text = new TextDecoder().decode(blob);
-            const data = JSON.parse(text);
-
-            if (data.localStorage) {
+            if (snap.exists() && snap.data().data) {
                 console.log("Restoring cloud settings...");
-                Object.keys(data.localStorage).forEach(key => {
-                    // API Key বা ক্রিটিক্যাল কিছু ওভাররাইট এড়াতে চাইলে এখানে চেক বসান
+                const localData = JSON.parse(snap.data().data);
+                
+                Object.keys(localData).forEach(key => {
+                    // API Key ওভাররাইট এড়াতে চাইলে
                     if(key !== 'geminiApiKey') { 
-                        localStorage.setItem(key, data.localStorage[key]);
+                        localStorage.setItem(key, localData[key]);
                     }
                 });
                 showCustomAlert("ক্লাউড থেকে সেটিংস সফলভাবে সিঙ্ক করা হয়েছে!");
             }
         } catch (error) {
-            // ব্যাকআপ না থাকলে এরর ইগনোর করুন
-            if (error.code !== 'storage/object-not-found') {
-                console.error("Restore Error:", error);
-            }
+            console.error("Restore Error:", error);
         }
     }
 </script>
