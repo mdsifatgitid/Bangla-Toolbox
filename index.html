@@ -31713,354 +31713,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 </script>
-<!-- ====================================================================-->
-<!-- END: FIREBASE SCRIPT -->
-<!-- ====================================================================-->
-	
-<!-- ====================================================================-->
-<!-- START: SIDEBAR SCRIPT-->
-<!-- ====================================================================-->
-
-<!-- Sidebar Toggle Button -->
-<button id="sidebarToggle" class="fixed top-4 left-4 z-40 w-12 h-12 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-transform duration-300 ease-in-out hover:bg-indigo-700 has-tooltip" data-tooltip="সাইডবার (শর্টকাট: Alt+X)">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-</button>
-
-<!-- Sidebar Menu -->
-<div id="sidebar" class="fixed top-0 left-[-300px] w-[300px] h-full bg-white dark:bg-gray-800 shadow-xl z-50 transition-left duration-300 ease-in-out">
-    <div class="p-4">
-        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">সকল টুলস</h3>
-		<!-- নতুন সাইডবার ক্লোজ বাটন: সাইডবার ওপেন হলে ডানদিকে প্রদর্শিত হবে -->
-<button id="sidebarClose" class="absolute top-4 right-4 z-50 text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-</button>
-        <input type="text" id="sidebarSearch" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="টুলস খুঁজুন...">
-        <ul id="sidebar-tool-list" class="mt-4 space-y-2 h-[calc(100vh-120px)] overflow-y-auto">
-            <!-- Tool list will be populated by JavaScript -->
-        </ul>
-    </div>
-
-<!-- WhatsApp Floating Button Section Start -->
-    <div id="whatsapp-container" class="absolute bottom-5 right-5 z-50 flex flex-col items-end gap-2">
-        
-        <!-- ভাসমান টেক্সটবক্স (ডিফল্টভাবে লুকানো) -->
-        <div id="whatsapp-input-box" class="hidden bg-white dark:bg-gray-700 p-3 rounded-xl shadow-2xl border border-green-200 dark:border-gray-600 w-64 mb-2 transition-all duration-300 ease-in-out transform origin-bottom-right">
-            <label class="block text-xs font-bold text-green-600 dark:text-green-400 mb-1">মেসেজ লিখুন:</label>
-            <textarea id="whatsapp-message" rows="3" class="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-600 dark:border-gray-500 dark:text-white resize-none" placeholder="এখানে আপনার টেক্সট লিখুন..."></textarea>
-            
-            <button id="whatsapp-send-btn" class="mt-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold py-1.5 px-3 rounded-lg w-full flex items-center justify-center gap-2 transition-colors shadow-md">
-                <span>পাঠিয়ে দিন</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
-                </svg>
-            </button>
-        </div>
-
-        <!-- হোয়াটসঅ্যাপ আইকন বাটন -->
-        <button id="whatsapp-fab" class="w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center shadow-lg transition-transform transform hover:scale-110 active:scale-95 focus:outline-none ring-2 ring-white dark:ring-gray-800" title="হোয়াটসঅ্যাপে মেসেজ পাঠান">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
-            </svg>
-        </button>
-    </div>
-    <!-- WhatsApp Floating Button Section End -->
-	
-</div>
-
-<!-- ======================================================== -->
-<!-- START: পাবলিক মন্তব্য সেকশন (Floating & Emoji) -->
-<!-- ======================================================== -->
-<div id="comment-fab" class="relative" title="মন্তব্য করুন">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-    <!-- Notification Red Dot -->
-    <span id="comment-notification-dot" class="absolute top-0 right-0 w-3 h-3 bg-red-600 border-2 border-white dark:border-gray-800 rounded-full hidden"></span>
-</div>
-
-<div id="comment-section-container">
-    <div class="comment-header">
-        <span>পাবলিক মেসেজ</span>
-        <!-- নতুন: একটিভ ইউজার কাউন্টার -->
-        <span id="active-user-count" class="ml-auto mr-3 bg-white text-blue-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm flex items-center gap-1">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-            </span>
-            একটিভ: ১
-        </span>
-        <button id="close-comment-btn" class="hover:bg-blue-700 p-1 rounded-full transition">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-    </div>
-    
-    <div id="comment-list" class="comment-list">
-        <div class="text-center text-gray-500 mt-10 text-sm">লোডিং...</div>
-    </div>
-
-    <div class="comment-input-area">
-        <!-- ইমোজি পিকার কন্টেইনার (লুকানো) -->
-        <div id="emoji-picker-container" class="hidden"></div>
-
-        <div class="flex gap-2 mb-2">
-            <!-- প্রোফাইল ইমোজি বাটন -->
-            <button id="emoji-selector-btn" class="p-2 border rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 text-xl transition-colors w-12 flex items-center justify-center" title="প্রোফাইল ইমোজি সেট করুন">👤</button>
-            
-            <!-- নাম ইনপুট এবং এডিট বাটন গ্রুপ -->
-            <div class="flex-grow flex relative">
-                <input type="text" id="comment-username" placeholder="আপনার নাম (লক হবে)" class="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-8" maxlength="20">
-                <!-- নাম এডিট বাটন -->
-                <button id="edit-username-btn" class="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 hidden" title="নাম পরিবর্তন করুন">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" /></svg>
-                </button>
-            </div>
-        </div>
-        
-        <div class="flex gap-2">
-            <!-- মেসেজ ইনপুট -->
-            <textarea id="comment-message" rows="1" placeholder="মেসেজ লিখুন..." class="flex-grow p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white resize-none" style="min-height: 40px; max-height: 80px;"></textarea>
-            
-            <!-- সেন্ড বাটন -->
-            <button id="send-comment-btn" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed w-10">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
-        </div>
-        <p class="text-[10px] text-gray-400 mt-1 text-center">মন্তব্য ২৪ ঘণ্টা পর মুছে যাবে। যেকেউ ডিলিট করতে পারে।</p>
-    </div>
-</div>
-<!-- ======================================================== -->
-<!-- END: পাবলিক মন্তব্য সেকশন -->
-<!-- ======================================================== -->
-
-<!-- Sidebar Overlay -->
-<div id="sidebarOverlay" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-30 hidden"></div>
-
-<!-- ====================================================================-->
-<!-- END: SIDEBAR SCRIPT-->
-<!-- ====================================================================-->
-
-<!-- ======================================================== -->
-<!-- START: ফ্লোটিং সাইডবার ভিডিও প্লেয়ার (ডান পাশে) -->
-<!-- ======================================================== -->
-<div id="rightSideVideoContainer" class="hidden">
-    <!-- ড্র্যাগ বা মুভ করার বার এবং ক্লোজ বাটন -->
-    <div class="video-drag-handle group">
-        <button id="closeVideoBtn" class="text-white hover:text-red-500 transition-colors" title="ভিডিও বন্ধ করুন">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-    </div>
-    
-    <!-- ইউটিউব আইফ্রেম -->
-    <iframe id="featuredVideoFrame" 
-            class="w-full h-full absolute top-0 left-0" 
-            src="" 
-            title="YouTube video player" 
-            frameborder="0" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-            referrerpolicy="strict-origin-when-cross-origin" 
-            allowfullscreen>
-    </iframe>
-    
-    <!-- নতুন: লোকাল ভিডিও প্লেয়ার এলিমেন্ট -->
-    <video id="featuredLocalVideo" 
-           class="w-full h-full absolute top-0 left-0 hidden bg-black" 
-           controls 
-           autoplay>
-    </video>
-</div>
-<!-- ======================================================== -->
-<!-- END: ফ্লোটিং সাইডবার ভিডিও প্লেয়ার -->
-<!-- ======================================================== -->
-
-<!-- ============================================== -->
-<!-- START: ফায়ারবেস প্রোফাইল, স্টোরেজ উইন্ডো এবং নোটিফিকেশন -->
-<!-- ============================================== -->
-
-<!-- গ্লোবাল অ্যানাউন্সমেন্ট ব্যানার -->
-<div id="globalAnnouncementBanner" class="hidden fixed top-0 left-0 w-full z-[100] bg-blue-600 text-white px-4 py-3 shadow-lg flex justify-between items-center transform transition-transform duration-500 -translate-y-full">
-    <div class="flex items-center gap-3">
-        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6 animate-pulse text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
-        <span id="announcementText" class="font-medium text-sm md:text-base text-bangla">নতুন আপডেট বা মেসেজ এখানে দেখাবে</span>
-    </div>
-    <button onclick="closeAnnouncement()" class="text-white hover:text-gray-200">
-        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-    </button>
-</div>
-
-<!-- ফ্লোটিং অ্যাকশন বাটনস (ডান দিকে নিচে) -->
-<div class="fixed bottom-6 right-6 flex flex-row gap-4 z-[1000]">
-    <!-- ক্লাউড স্টোরেজ বাটন -->
-    <button onclick="toggleCloudWindow()" class="bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 hover:scale-110 transition-all group relative" title="ফাইল শেয়ারিং">
-        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
-        
-    </button>
-    
-    <!-- ইউজার প্রোফাইল বাটন -->
-    <button onclick="toggleProfileWindow()" class="bg-teal-600 text-white p-3 rounded-full shadow-lg hover:bg-teal-700 hover:scale-110 transition-all group relative" title="ইউজার প্রোফাইল">
-        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-    
-    </button>
-</div>
-
-<!-- প্রোফাইল ও সেটিংস চ্যাট উইন্ডো -->
-<div id="profileWindow" class="hidden fixed bottom-24 right-6 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col overflow-hidden text-bangla transition-all">
-    <div class="bg-teal-600 p-4 text-white flex justify-between items-center">
-        <h3 class="font-bold">আমার প্রোফাইল ও সেটিংস</h3>
-        <button onclick="toggleProfileWindow()" class="hover:text-gray-200"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
-    </div>
-    <div class="p-4 flex-1 overflow-y-auto max-h-96">
-        <!-- ইউজার ইনফো সেকশন -->
-        <div id="userProfileInfo" class="mb-4 pb-4 border-b dark:border-gray-700 text-center">
-            <div class="w-16 h-16 bg-gray-300 rounded-full mx-auto mb-2 flex items-center justify-center text-xl font-bold text-gray-600 overflow-hidden" id="userAvatar">
-                U
-            </div>
-            <!-- নাম এবং ইমেইল দেখানোর জায়গা -->
-            <h4 id="userDisplayName" class="font-bold text-lg text-gray-800 dark:text-white">গেস্ট ইউজার</h4>
-            <p id="userEmailDisplay" class="text-sm text-gray-600 dark:text-gray-400 mb-2">লগইন করা নেই</p>
-            
-            <button id="googleSignInBtn" class="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded-full w-full flex items-center justify-center gap-2 mt-2">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18px" height="18px"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
-                Google দিয়ে সাইন-ইন
-            </button>
-            <button id="signOutBtn" class="hidden mt-2 text-sm text-red-500 hover:underline">লগআউট করুন</button>
-        </div>
-
-        <!-- ইউনিক ইউজারনেম সেকশন -->
-        <div class="space-y-3">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ইউনিক ইউজারনেম</label>
-                <div class="relative flex items-center">
-                    <input type="text" id="customUsername" placeholder="username" disabled class="w-full border rounded-l-md px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:border-teal-500 disabled:bg-gray-100 disabled:text-gray-500">
-                    
-                    <!-- Save (Tick) Button -->
-                    <button id="saveUsernameBtn" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-r-md hidden">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                    </button>
-                    <!-- Edit Button -->
-                    <button id="editUsernameBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-r-md hidden">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
-                    </button>
-                </div>
-                <!-- Availability Status Message -->
-                <p id="usernameStatus" class="text-xs mt-1 h-4"></p>
-            </div>
-            
-            <div class="flex items-center justify-between border-t dark:border-gray-700 pt-2">
-                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">অটো ক্লাউড সিঙ্ক</span>
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="cloudSyncToggle" class="sr-only peer" checked>
-                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
-                </label>
-            </div>
-
-            <button onclick="saveSettingsToCloudManually()" class="w-full bg-gray-800 text-white text-sm py-2 rounded-md hover:bg-gray-900 transition-colors">
-                সেটিংস ক্লাউডে সেভ করুন
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ফাইল শেয়ারিং চ্যাট উইন্ডো -->
-<div id="cloudWindow" class="hidden fixed bottom-24 right-6 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col overflow-hidden text-bangla transition-all">
-    <div class="bg-indigo-600 p-4 text-white flex justify-between items-center">
-        <h3 class="font-bold">ফাইল ট্রান্সফার (P2P)</h3>
-        <button onclick="toggleCloudWindow()" class="hover:text-gray-200"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
-    </div>
-    
-    <div class="p-4 flex-1 flex flex-col gap-3 overflow-y-auto max-h-96">
-        <!-- Send Section -->
-        <div class="bg-indigo-50 dark:bg-gray-700 p-3 rounded-lg">
-            <label class="block text-xs font-bold text-indigo-700 dark:text-indigo-300 mb-1">কাকে পাঠাবেন (User/Email)?</label>
-            <input type="text" id="recipientInput" placeholder="ইউজারনেম বা ইমেইল লিখুন..." class="w-full p-2 text-sm border rounded mb-2 dark:bg-gray-600 dark:border-gray-500 dark:text-white">
-            
-            <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-3 text-center hover:bg-white dark:hover:bg-gray-600 transition-colors cursor-pointer" onclick="document.getElementById('cloudFileInput').click()">
-                <span class="text-xs font-medium text-gray-600 dark:text-gray-300" id="cloudFileLabel">ফাইল বাছুন</span>
-                <input type="file" id="cloudFileInput" class="hidden" onchange="handleCloudFileSelect(event)">
-            </div>
-            
-            <button id="uploadBtn" onclick="uploadFileToFirebase()" class="w-full mt-2 bg-indigo-600 text-white py-1.5 text-sm rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                পাঠান
-            </button>
-             <!-- প্রোগ্রেস বার -->
-            <div id="uploadProgressContainer" class="hidden w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700 mt-2">
-                <div id="uploadProgressBar" class="bg-indigo-600 h-1.5 rounded-full" style="width: 0%"></div>
-            </div>
-            <!-- লিঙ্ক রেজাল্ট -->
-            <div id="uploadResult" class="hidden mt-2">
-                <div class="flex items-center gap-1">
-                    <input type="text" id="sharedFileLink" readonly class="text-[10px] flex-1 p-1 border rounded bg-white dark:bg-gray-800 dark:text-white">
-                    <button onclick="copySharedLink()" class="p-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs">কপি</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Inbox Section -->
-        <div class="border-t dark:border-gray-600 pt-2">
-            <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
-                ইনবক্স (আগত ফাইল)
-            </h4>
-            <div id="inboxList" class="space-y-2 text-sm text-gray-500 dark:text-gray-400">
-                <p class="text-center text-xs py-2">কোনো নতুন ফাইল নেই</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-<script>
-    // প্রোফাইল উইন্ডো টগল
-    function toggleProfileWindow() {
-        const profileWin = document.getElementById('profileWindow');
-        const cloudWin = document.getElementById('cloudWindow');
-        
-        // অন্য উইন্ডো বন্ধ করুন
-        if(cloudWin) cloudWin.classList.add('hidden');
-        
-        // প্রোফাইল উইন্ডো টগল করুন
-        if(profileWin) profileWin.classList.toggle('hidden');
-    }
-
-    // ক্লাউড উইন্ডো টগল
-    function toggleCloudWindow() {
-        const profileWin = document.getElementById('profileWindow');
-        const cloudWin = document.getElementById('cloudWindow');
-        
-        // অন্য উইন্ডো বন্ধ করুন
-        if(profileWin) profileWin.classList.add('hidden');
-        
-        // ক্লাউড উইন্ডো টগল করুন
-        if(cloudWin) cloudWin.classList.toggle('hidden');
-    }
-
-    // এনাউন্সমেন্ট বন্ধ করা
-    function closeAnnouncement() {
-        const banner = document.getElementById('globalAnnouncementBanner');
-        if(banner) {
-            banner.classList.add('-translate-y-full');
-            setTimeout(() => banner.classList.add('hidden'), 500);
-        }
-    }
-    
-    // এই ফাংশনটি ফায়ারবেস থেকে কল করা হবে
-    function showAnnouncementBanner(message) {
-        const banner = document.getElementById('globalAnnouncementBanner');
-        const text = document.getElementById('announcementText');
-        if(banner && text) {
-            text.innerText = message;
-            banner.classList.remove('hidden', '-translate-y-full');
-        }
-    }
-</script>
-
-<!-- END: ফায়ারবেস প্রোফাইল, স্টোরেজ উইন্ডো এবং নোটিফিকেশন -->
-
-<!-- ============================================== -->
-<!-- START: FIREBASE LOGIC (MODULE) -->
-<!-- ============================================== -->
+<!-- START: Profile and File Transfer FIREBASE LOGIC (MODULE) -->
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -32527,8 +32180,353 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 </script>
+
+<!-- END: Profile and File Transfer FIREBASE LOGIC -->
+
+<!-- ====================================================================-->
+<!-- END: FIREBASE SCRIPT -->
+<!-- ====================================================================-->
+	
+<!-- ====================================================================-->
+<!-- START: SIDEBAR SCRIPT-->
+<!-- ====================================================================-->
+
+<!-- Sidebar Toggle Button -->
+<button id="sidebarToggle" class="fixed top-4 left-4 z-40 w-12 h-12 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-transform duration-300 ease-in-out hover:bg-indigo-700 has-tooltip" data-tooltip="সাইডবার (শর্টকাট: Alt+X)">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+</button>
+
+<!-- Sidebar Menu -->
+<div id="sidebar" class="fixed top-0 left-[-300px] w-[300px] h-full bg-white dark:bg-gray-800 shadow-xl z-50 transition-left duration-300 ease-in-out">
+    <div class="p-4">
+        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">সকল টুলস</h3>
+		<!-- নতুন সাইডবার ক্লোজ বাটন: সাইডবার ওপেন হলে ডানদিকে প্রদর্শিত হবে -->
+<button id="sidebarClose" class="absolute top-4 right-4 z-50 text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+</button>
+        <input type="text" id="sidebarSearch" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-indigo-500" placeholder="টুলস খুঁজুন...">
+        <ul id="sidebar-tool-list" class="mt-4 space-y-2 h-[calc(100vh-120px)] overflow-y-auto">
+            <!-- Tool list will be populated by JavaScript -->
+        </ul>
+    </div>
+
+<!-- WhatsApp Floating Button Section Start -->
+    <div id="whatsapp-container" class="absolute bottom-5 right-5 z-50 flex flex-col items-end gap-2">
+        
+        <!-- ভাসমান টেক্সটবক্স (ডিফল্টভাবে লুকানো) -->
+        <div id="whatsapp-input-box" class="hidden bg-white dark:bg-gray-700 p-3 rounded-xl shadow-2xl border border-green-200 dark:border-gray-600 w-64 mb-2 transition-all duration-300 ease-in-out transform origin-bottom-right">
+            <label class="block text-xs font-bold text-green-600 dark:text-green-400 mb-1">মেসেজ লিখুন:</label>
+            <textarea id="whatsapp-message" rows="3" class="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-600 dark:border-gray-500 dark:text-white resize-none" placeholder="এখানে আপনার টেক্সট লিখুন..."></textarea>
+            
+            <button id="whatsapp-send-btn" class="mt-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold py-1.5 px-3 rounded-lg w-full flex items-center justify-center gap-2 transition-colors shadow-md">
+                <span>পাঠিয়ে দিন</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- হোয়াটসঅ্যাপ আইকন বাটন -->
+        <button id="whatsapp-fab" class="w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-full flex items-center justify-center shadow-lg transition-transform transform hover:scale-110 active:scale-95 focus:outline-none ring-2 ring-white dark:ring-gray-800" title="হোয়াটসঅ্যাপে মেসেজ পাঠান">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+            </svg>
+        </button>
+    </div>
+    <!-- WhatsApp Floating Button Section End -->
+	
+</div>
+
+<!-- ======================================================== -->
+<!-- START: পাবলিক মন্তব্য সেকশন (Floating & Emoji) -->
+<!-- ======================================================== -->
+<div id="comment-fab" class="relative" title="মন্তব্য করুন">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    <!-- Notification Red Dot -->
+    <span id="comment-notification-dot" class="absolute top-0 right-0 w-3 h-3 bg-red-600 border-2 border-white dark:border-gray-800 rounded-full hidden"></span>
+</div>
+
+<div id="comment-section-container">
+    <div class="comment-header">
+        <span>পাবলিক মেসেজ</span>
+        <!-- নতুন: একটিভ ইউজার কাউন্টার -->
+        <span id="active-user-count" class="ml-auto mr-3 bg-white text-blue-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm flex items-center gap-1">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            একটিভ: ১
+        </span>
+        <button id="close-comment-btn" class="hover:bg-blue-700 p-1 rounded-full transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    </div>
+    
+    <div id="comment-list" class="comment-list">
+        <div class="text-center text-gray-500 mt-10 text-sm">লোডিং...</div>
+    </div>
+
+    <div class="comment-input-area">
+        <!-- ইমোজি পিকার কন্টেইনার (লুকানো) -->
+        <div id="emoji-picker-container" class="hidden"></div>
+
+        <div class="flex gap-2 mb-2">
+            <!-- প্রোফাইল ইমোজি বাটন -->
+            <button id="emoji-selector-btn" class="p-2 border rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 text-xl transition-colors w-12 flex items-center justify-center" title="প্রোফাইল ইমোজি সেট করুন">👤</button>
+            
+            <!-- নাম ইনপুট এবং এডিট বাটন গ্রুপ -->
+            <div class="flex-grow flex relative">
+                <input type="text" id="comment-username" placeholder="আপনার নাম (লক হবে)" class="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white pr-8" maxlength="20">
+                <!-- নাম এডিট বাটন -->
+                <button id="edit-username-btn" class="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 hidden" title="নাম পরিবর্তন করুন">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" /></svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="flex gap-2">
+            <!-- মেসেজ ইনপুট -->
+            <textarea id="comment-message" rows="1" placeholder="মেসেজ লিখুন..." class="flex-grow p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white resize-none" style="min-height: 40px; max-height: 80px;"></textarea>
+            
+            <!-- সেন্ড বাটন -->
+            <button id="send-comment-btn" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg flex items-center justify-center transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed w-10">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+        <p class="text-[10px] text-gray-400 mt-1 text-center">মন্তব্য ২৪ ঘণ্টা পর মুছে যাবে। যেকেউ ডিলিট করতে পারে।</p>
+    </div>
+</div>
+<!-- ======================================================== -->
+<!-- END: পাবলিক মন্তব্য সেকশন -->
+<!-- ======================================================== -->
+
+<!-- Sidebar Overlay -->
+<div id="sidebarOverlay" class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 z-30 hidden"></div>
+
+<!-- ====================================================================-->
+<!-- END: SIDEBAR SCRIPT-->
+<!-- ====================================================================-->
+
+<!-- ======================================================== -->
+<!-- START: ফ্লোটিং সাইডবার ভিডিও প্লেয়ার (ডান পাশে) -->
+<!-- ======================================================== -->
+<div id="rightSideVideoContainer" class="hidden">
+    <!-- ড্র্যাগ বা মুভ করার বার এবং ক্লোজ বাটন -->
+    <div class="video-drag-handle group">
+        <button id="closeVideoBtn" class="text-white hover:text-red-500 transition-colors" title="ভিডিও বন্ধ করুন">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+    
+    <!-- ইউটিউব আইফ্রেম -->
+    <iframe id="featuredVideoFrame" 
+            class="w-full h-full absolute top-0 left-0" 
+            src="" 
+            title="YouTube video player" 
+            frameborder="0" 
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            referrerpolicy="strict-origin-when-cross-origin" 
+            allowfullscreen>
+    </iframe>
+    
+    <!-- নতুন: লোকাল ভিডিও প্লেয়ার এলিমেন্ট -->
+    <video id="featuredLocalVideo" 
+           class="w-full h-full absolute top-0 left-0 hidden bg-black" 
+           controls 
+           autoplay>
+    </video>
+</div>
+<!-- ======================================================== -->
+<!-- END: ফ্লোটিং সাইডবার ভিডিও প্লেয়ার -->
+<!-- ======================================================== -->
+
 <!-- ============================================== -->
-<!-- END: FIREBASE LOGIC -->
+<!-- START: প্রোফাইল, স্টোরেজ উইন্ডো এবং নোটিফিকেশন -->
+<!-- ============================================== -->
+
+<!-- গ্লোবাল অ্যানাউন্সমেন্ট ব্যানার -->
+<div id="globalAnnouncementBanner" class="hidden fixed top-0 left-0 w-full z-[100] bg-blue-600 text-white px-4 py-3 shadow-lg flex justify-between items-center transform transition-transform duration-500 -translate-y-full">
+    <div class="flex items-center gap-3">
+        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6 animate-pulse text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        <span id="announcementText" class="font-medium text-sm md:text-base text-bangla">নতুন আপডেট বা মেসেজ এখানে দেখাবে</span>
+    </div>
+    <button onclick="closeAnnouncement()" class="text-white hover:text-gray-200">
+        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+    </button>
+</div>
+
+<!-- ফ্লোটিং অ্যাকশন বাটনস (ডান দিকে নিচে) -->
+<div class="fixed bottom-6 right-6 flex flex-row gap-4 z-[1000]">
+    <!-- ক্লাউড স্টোরেজ বাটন -->
+    <button onclick="toggleCloudWindow()" class="bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 hover:scale-110 transition-all group relative" title="ফাইল শেয়ারিং">
+        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+        
+    </button>
+    
+    <!-- ইউজার প্রোফাইল বাটন -->
+    <button onclick="toggleProfileWindow()" class="bg-teal-600 text-white p-3 rounded-full shadow-lg hover:bg-teal-700 hover:scale-110 transition-all group relative" title="ইউজার প্রোফাইল">
+        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+    
+    </button>
+</div>
+
+<!-- প্রোফাইল ও সেটিংস চ্যাট উইন্ডো -->
+<div id="profileWindow" class="hidden fixed bottom-24 right-6 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col overflow-hidden text-bangla transition-all">
+    <div class="bg-teal-600 p-4 text-white flex justify-between items-center">
+        <h3 class="font-bold">আমার প্রোফাইল ও সেটিংস</h3>
+        <button onclick="toggleProfileWindow()" class="hover:text-gray-200"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+    </div>
+    <div class="p-4 flex-1 overflow-y-auto max-h-96">
+        <!-- ইউজার ইনফো সেকশন -->
+        <div id="userProfileInfo" class="mb-4 pb-4 border-b dark:border-gray-700 text-center">
+            <div class="w-16 h-16 bg-gray-300 rounded-full mx-auto mb-2 flex items-center justify-center text-xl font-bold text-gray-600 overflow-hidden" id="userAvatar">
+                U
+            </div>
+            <!-- নাম এবং ইমেইল দেখানোর জায়গা -->
+            <h4 id="userDisplayName" class="font-bold text-lg text-gray-800 dark:text-white">গেস্ট ইউজার</h4>
+            <p id="userEmailDisplay" class="text-sm text-gray-600 dark:text-gray-400 mb-2">লগইন করা নেই</p>
+            
+            <button id="googleSignInBtn" class="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded-full w-full flex items-center justify-center gap-2 mt-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18px" height="18px"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>
+                Google দিয়ে সাইন-ইন
+            </button>
+            <button id="signOutBtn" class="hidden mt-2 text-sm text-red-500 hover:underline">লগআউট করুন</button>
+        </div>
+
+        <!-- ইউনিক ইউজারনেম সেকশন -->
+        <div class="space-y-3">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ইউনিক ইউজারনেম</label>
+                <div class="relative flex items-center">
+                    <input type="text" id="customUsername" placeholder="username" disabled class="w-full border rounded-l-md px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:border-teal-500 disabled:bg-gray-100 disabled:text-gray-500">
+                    
+                    <!-- Save (Tick) Button -->
+                    <button id="saveUsernameBtn" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-r-md hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                    </button>
+                    <!-- Edit Button -->
+                    <button id="editUsernameBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-r-md hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
+                    </button>
+                </div>
+                <!-- Availability Status Message -->
+                <p id="usernameStatus" class="text-xs mt-1 h-4"></p>
+            </div>
+            
+            <div class="flex items-center justify-between border-t dark:border-gray-700 pt-2">
+                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">অটো ক্লাউড সিঙ্ক</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="cloudSyncToggle" class="sr-only peer" checked>
+                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                </label>
+            </div>
+
+            <button onclick="saveSettingsToCloudManually()" class="w-full bg-gray-800 text-white text-sm py-2 rounded-md hover:bg-gray-900 transition-colors">
+                সেটিংস ক্লাউডে সেভ করুন
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ফাইল শেয়ারিং চ্যাট উইন্ডো -->
+<div id="cloudWindow" class="hidden fixed bottom-24 right-6 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 flex flex-col overflow-hidden text-bangla transition-all">
+    <div class="bg-indigo-600 p-4 text-white flex justify-between items-center">
+        <h3 class="font-bold">ফাইল ট্রান্সফার (P2P)</h3>
+        <button onclick="toggleCloudWindow()" class="hover:text-gray-200"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+    </div>
+    
+    <div class="p-4 flex-1 flex flex-col gap-3 overflow-y-auto max-h-96">
+        <!-- Send Section -->
+        <div class="bg-indigo-50 dark:bg-gray-700 p-3 rounded-lg">
+            <label class="block text-xs font-bold text-indigo-700 dark:text-indigo-300 mb-1">কাকে পাঠাবেন (User/Email)?</label>
+            <input type="text" id="recipientInput" placeholder="ইউজারনেম বা ইমেইল লিখুন..." class="w-full p-2 text-sm border rounded mb-2 dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+            
+            <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-3 text-center hover:bg-white dark:hover:bg-gray-600 transition-colors cursor-pointer" onclick="document.getElementById('cloudFileInput').click()">
+                <span class="text-xs font-medium text-gray-600 dark:text-gray-300" id="cloudFileLabel">ফাইল বাছুন</span>
+                <input type="file" id="cloudFileInput" class="hidden" onchange="handleCloudFileSelect(event)">
+            </div>
+            
+            <button id="uploadBtn" onclick="uploadFileToFirebase()" class="w-full mt-2 bg-indigo-600 text-white py-1.5 text-sm rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                পাঠান
+            </button>
+             <!-- প্রোগ্রেস বার -->
+            <div id="uploadProgressContainer" class="hidden w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700 mt-2">
+                <div id="uploadProgressBar" class="bg-indigo-600 h-1.5 rounded-full" style="width: 0%"></div>
+            </div>
+            <!-- লিঙ্ক রেজাল্ট -->
+            <div id="uploadResult" class="hidden mt-2">
+                <div class="flex items-center gap-1">
+                    <input type="text" id="sharedFileLink" readonly class="text-[10px] flex-1 p-1 border rounded bg-white dark:bg-gray-800 dark:text-white">
+                    <button onclick="copySharedLink()" class="p-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs">কপি</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inbox Section -->
+        <div class="border-t dark:border-gray-600 pt-2">
+            <h4 class="text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+                ইনবক্স (আগত ফাইল)
+            </h4>
+            <div id="inboxList" class="space-y-2 text-sm text-gray-500 dark:text-gray-400">
+                <p class="text-center text-xs py-2">কোনো নতুন ফাইল নেই</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // প্রোফাইল উইন্ডো টগল
+    function toggleProfileWindow() {
+        const profileWin = document.getElementById('profileWindow');
+        const cloudWin = document.getElementById('cloudWindow');
+        
+        // অন্য উইন্ডো বন্ধ করুন
+        if(cloudWin) cloudWin.classList.add('hidden');
+        
+        // প্রোফাইল উইন্ডো টগল করুন
+        if(profileWin) profileWin.classList.toggle('hidden');
+    }
+
+    // ক্লাউড উইন্ডো টগল
+    function toggleCloudWindow() {
+        const profileWin = document.getElementById('profileWindow');
+        const cloudWin = document.getElementById('cloudWindow');
+        
+        // অন্য উইন্ডো বন্ধ করুন
+        if(profileWin) profileWin.classList.add('hidden');
+        
+        // ক্লাউড উইন্ডো টগল করুন
+        if(cloudWin) cloudWin.classList.toggle('hidden');
+    }
+
+    // এনাউন্সমেন্ট বন্ধ করা
+    function closeAnnouncement() {
+        const banner = document.getElementById('globalAnnouncementBanner');
+        if(banner) {
+            banner.classList.add('-translate-y-full');
+            setTimeout(() => banner.classList.add('hidden'), 500);
+        }
+    }
+    
+    // এই ফাংশনটি ফায়ারবেস থেকে কল করা হবে
+    function showAnnouncementBanner(message) {
+        const banner = document.getElementById('globalAnnouncementBanner');
+        const text = document.getElementById('announcementText');
+        if(banner && text) {
+            text.innerText = message;
+            banner.classList.remove('hidden', '-translate-y-full');
+        }
+    }
+</script>
+
+<!-- ============================================== -->
+<!-- END: প্রোফাইল, স্টোরেজ উইন্ডো এবং নোটিফিকেশন -->
 <!-- ============================================== -->
 
 </body>
