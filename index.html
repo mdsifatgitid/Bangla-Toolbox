@@ -79,8 +79,7 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js"></script>
 	<!-- Crypto-JS CDN (এনক্রিপশন টুলের জন্য নতুন যুক্ত করা হয়েছে) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <!-- PeerJS for P2P File Transfer (Firebase Storage Alternative) -->
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+
     <!-- ফাইল প্রসেসিং লাইব্রেরি (কনভার্টারের জন্য নতুন যুক্ত) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -31989,13 +31988,13 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- গ্লোবাল অ্যানাউন্সমেন্ট ব্যানার -->
 <div id="globalAnnouncementBanner" class="hidden fixed top-0 left-0 w-full z-[100] bg-blue-600 text-white px-4 py-3 shadow-lg flex justify-between items-center transform transition-transform duration-500 -translate-y-full">
     <div class="flex items-center gap-3">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 animate-pulse text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6 animate-pulse text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
         </svg>
         <span id="announcementText" class="font-medium text-sm md:text-base text-bangla">নতুন আপডেট বা মেসেজ এখানে দেখাবে</span>
     </div>
     <button onclick="closeAnnouncement()" class="text-white hover:text-gray-200">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
     </button>
 </div>
 
@@ -32003,13 +32002,13 @@ document.addEventListener('DOMContentLoaded', () => {
 <div class="fixed bottom-6 right-6 flex flex-row gap-4 z-[1000]">
     <!-- ক্লাউড স্টোরেজ বাটন -->
     <button onclick="toggleCloudWindow()" class="bg-indigo-600 text-white p-3 rounded-full shadow-lg hover:bg-indigo-700 hover:scale-110 transition-all group relative" title="ফাইল শেয়ারিং">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
         
     </button>
     
     <!-- ইউজার প্রোফাইল বাটন -->
     <button onclick="toggleProfileWindow()" class="bg-teal-600 text-white p-3 rounded-full shadow-lg hover:bg-teal-700 hover:scale-110 transition-all group relative" title="ইউজার প্রোফাইল">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+        <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
     
     </button>
 </div>
@@ -32090,9 +32089,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 <input type="file" id="cloudFileInput" class="hidden" onchange="handleCloudFileSelect(event)">
             </div>
             
-            <button id="uploadBtn" onclick="uploadFileP2P()" class="w-full mt-2 bg-indigo-600 text-white py-1.5 text-sm rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            <button id="uploadBtn" onclick="uploadFileToFirebase()" class="w-full mt-2 bg-indigo-600 text-white py-1.5 text-sm rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                 পাঠান
             </button>
+             <!-- প্রোগ্রেস বার -->
+            <div id="uploadProgressContainer" class="hidden w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700 mt-2">
+                <div id="uploadProgressBar" class="bg-indigo-600 h-1.5 rounded-full" style="width: 0%"></div>
+            </div>
+            <!-- লিঙ্ক রেজাল্ট -->
+            <div id="uploadResult" class="hidden mt-2">
+                <div class="flex items-center gap-1">
+                    <input type="text" id="sharedFileLink" readonly class="text-[10px] flex-1 p-1 border rounded bg-white dark:bg-gray-800 dark:text-white">
+                    <button onclick="copySharedLink()" class="p-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs">কপি</button>
+                </div>
+            </div>
         </div>
 
         <!-- Inbox Section -->
@@ -32107,6 +32117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     </div>
 </div>
+
 
 <script>
     // প্রোফাইল উইন্ডো টগল
@@ -32154,6 +32165,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <!-- START: Profile and File Transfer FIREBASE LOGIC (MODULE) -->
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { 
@@ -32171,9 +32183,12 @@ document.addEventListener('DOMContentLoaded', () => {
         query, where, getDocs, writeBatch, orderBy, deleteDoc, 
         serverTimestamp, addDoc, runTransaction 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    // Firebase Storage import গুলো মুছে ফেলা হয়েছে
+    import { 
+        getStorage, ref, uploadBytesResumable, getDownloadURL, 
+        getBytes 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-    // Firebase কনফিগারেশন...
+    // কনফিগারেশন
     const firebaseConfig = {
         apiKey: "AIzaSyBmTptSZWbNB5MrT8jIWVm6knak2L2Xv40",
         authDomain: "bangla-toolbox1.firebaseapp.com",
@@ -32184,21 +32199,25 @@ document.addEventListener('DOMContentLoaded', () => {
         measurementId: "G-6NVS7YFNBX"
     };
 
+    // ডাইনামিক অ্যাপ আইডি (ডোমেইন অনুযায়ী ডাটা আলাদা হবে)
+    // লোকালহোস্টে টেস্ট করলে 'localhost' হবে, গিটহাবে হলে ডোমেইন নেম হবে
     const appId = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
                   ? 'banglatoolbox.github.io' 
                   : window.location.hostname;
+
+    console.log("Current App ID (Firestore Path):", appId);
 
     // Firebase Init
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    // const storage = getStorage(app); - এটি মুছে ফেলা হয়েছে
+    const storage = getStorage(app);
 
     let currentUser = null;
     let selectedUploadFile = null;
-    let peer = null; // P2P কানেকশনের জন্য Peer অবজেক্ট
+    let inboxUnsubscribe = null;
 
-    // --- অথেন্টিকেশন এবং P2P ইনিশিয়ালাইজেশন ---
+    // --- ১. অথেন্টিকেশন এবং ইনিশিয়ালাইজেশন ---
     setPersistence(auth, browserLocalPersistence)
         .then(() => {
             onAuthStateChanged(auth, async (user) => {
@@ -32207,35 +32226,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentUser = user;
                     updateProfileUI(user);
                     
-                    // --- P2P ইনিশিয়ালাইজেশন ---
-                    if (peer) peer.destroy(); // আগের কানেকশন থাকলে ধ্বংস করুন
-                    peer = new Peer(user.uid); // Firebase UID দিয়ে Peer আইডি তৈরি
-
-                    peer.on('open', id => console.log('My PeerJS ID is:', id));
-                    peer.on('error', err => console.error('PeerJS Error:', err));
-                    
-                    // ইনকামিং কানেকশন হ্যান্ডেল করা
-                    peer.on('connection', (conn) => {
-                        console.log('Incoming connection from', conn.peer);
-                        conn.on('data', (data) => {
-                            // প্রথম ডেটা হলো ফাইল ইনফো, পরেরটি হলো ফাইল নিজেই
-                            if (data.type === 'file-info') {
-                                if (confirm(`${data.senderName || 'Someone'} আপনাকে "${data.fileName}" (${(data.fileSize / 1024 / 1024).toFixed(2)} MB) পাঠাতে চায়। গ্রহণ করবেন?`)) {
-                                    // গ্রহণ করলে রিসিভারকে সংকেত পাঠান
-                                    conn.send({ type: 'transfer-accepted' });
-                                } else {
-                                    conn.send({ type: 'transfer-rejected' });
-                                }
-                            } else if (data.type === 'file-chunk') {
-                                // ফাইল রিসিভ করার লজিক এখানে থাকবে
-                                handleReceivedFile(data, conn.metadata.senderName);
-                            }
-                        });
-                    });
-
+                    // ইউজারনেম লজিক
                     await handleAutoUsername(user);
-                    setupUsernameLogic(user);
+                    setupUsernameLogic(user); // ইউজারনেম ইনপুট এবং এডিট বাটন হ্যান্ডলিং
+                    
+                    // ইনবক্স ও উপস্থিতি
+                    listenToInbox(user);
                     restoreSettingsFromCloud(user);
+                    
+                    if (typeof initializeGlobalCounter === 'function') {
+                        // গ্লোবাল ফাংশন না হলে মডিউলের ভেতরেই লজিক রাখতে হবে (নিচে আছে)
+                    }
                     
                 } else {
                     console.log("No user, signing in anonymously...");
@@ -32245,7 +32246,6 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch((error) => console.error("Auth Persistence Error:", error));
 
-    // বাদবাকি অথেন্টিকেশন ফাংশন (Google Sign-in, Sign out, updateProfileUI) অপরিবর্তিত
     // Google Sign-in
     const googleBtn = document.getElementById('googleSignInBtn');
     if(googleBtn) {
@@ -32290,25 +32290,37 @@ document.addEventListener('DOMContentLoaded', () => {
             if(signOutBtn) signOutBtn.classList.add('hidden');
         }
     }
-    
-    // অটোমেটিক ইউজারনেম অ্যাসাইনমেন্ট অপরিবর্তিত
+
+    // --- ২. অটোমেটিক ইউজারনেম অ্যাসাইনমেন্ট ---
     async function handleAutoUsername(user) {
         const userProfileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'profile');
+        
         try {
             const snap = await getDoc(userProfileRef);
+            
+            // যদি আগে থেকে ইউজারনেম সেট করা না থাকে
             if (!snap.exists() || !snap.data().username) {
                 const statsRef = doc(db, 'artifacts', appId, 'public', 'data', 'global_stats');
+                
                 await runTransaction(db, async (transaction) => {
                     const statsDoc = await transaction.get(statsRef);
                     let newCount = 1;
                     if (statsDoc.exists()) {
                         newCount = (statsDoc.data().user_count || 0) + 1;
                     }
+
                     const newUsername = `@${newCount}`;
+                    
+                    // ১. গ্লোবাল কাউন্টার আপডেট
                     transaction.set(statsRef, { user_count: newCount }, { merge: true });
+                    
+                    // ২. ইউজারের প্রোফাইলে সেভ
                     transaction.set(userProfileRef, { username: newUsername }, { merge: true });
+                    
+                    // ৩. পাবলিক সার্চের জন্য সেভ
                     const publicNameRef = doc(db, 'artifacts', appId, 'public', 'data', 'usernames', newUsername.toLowerCase());
                     transaction.set(publicNameRef, { uid: user.uid, email: user.email || null });
+                    
                     console.log(`New Username Assigned: ${newUsername}`);
                 });
             }
@@ -32316,8 +32328,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Auto Username Error:", e);
         }
     }
-    
-    // ইউজারনেম ডিসপ্লে এবং এডিট লজিক অপরিবর্তিত
+
+    // --- ৩. ইউজারনেম ডিসপ্লে এবং এডিট লজিক ---
     const usernameInput = document.getElementById('customUsername');
     const saveUsernameBtn = document.getElementById('saveUsernameBtn');
     const editUsernameBtn = document.getElementById('editUsernameBtn');
@@ -32325,14 +32337,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupUsernameLogic(user) {
         const userProfileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'profile');
+        
+        // রিয়েলটাইম লিসেনার: ডাটাবেসে চেঞ্জ হলে ইনপুটে আপডেট হবে
         onSnapshot(userProfileRef, (snap) => {
             if (snap.exists() && snap.data().username) {
                 if(usernameInput) {
                     usernameInput.value = snap.data().username;
-                    lockUsernameInput(); 
+                    lockUsernameInput(); // ইউজারনেম পেলে ইনপুট লক করে দিন
                 }
             }
         });
+
+        // এডিট বাটন ক্লিক
         if(editUsernameBtn) {
             editUsernameBtn.onclick = () => {
                 unlockUsernameInput();
@@ -32342,22 +32358,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
         }
+
+        // সেভ বাটন ক্লিক
         if(saveUsernameBtn) {
             saveUsernameBtn.onclick = async () => {
                 let newName = usernameInput.value.trim().toLowerCase();
+                // @ না থাকলে যোগ করুন
                 if (!newName.startsWith('@')) newName = '@' + newName;
-                if (newName.length < 4) return showCustomAlert("ইউজারনেম অন্তত ৩ অক্ষরের হতে হবে (@ বাদে)");
+                
+                if (newName.length < 4) {
+                    showCustomAlert("ইউজারনেম অন্তত ৩ অক্ষরের হতে হবে (@ বাদে)");
+                    return;
+                }
 
+                // ডুপ্লিকেট চেক
                 const publicNameRef = doc(db, 'artifacts', appId, 'public', 'data', 'usernames', newName);
                 const nameSnap = await getDoc(publicNameRef);
-                if (nameSnap.exists() && nameSnap.data().uid !== user.uid) return showCustomAlert("এই নামটি অন্য কেউ ব্যবহার করছে।");
 
+                if (nameSnap.exists() && nameSnap.data().uid !== user.uid) {
+                    showCustomAlert("এই নামটি অন্য কেউ ব্যবহার করছে।");
+                    return;
+                }
+
+                // আগের নাম ডিলিট এবং নতুন নাম সেভ
                 const currentProfile = await getDoc(userProfileRef);
                 const batch = writeBatch(db);
+
                 if(currentProfile.exists() && currentProfile.data().username) {
                     const oldName = currentProfile.data().username;
-                    if(oldName !== newName) batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'usernames', oldName));
+                    if(oldName !== newName) {
+                        batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'usernames', oldName));
+                    }
                 }
+
                 batch.set(publicNameRef, { uid: user.uid, email: user.email || null });
                 batch.set(userProfileRef, { username: newName }, { merge: true });
                 
@@ -32366,7 +32399,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     showCustomAlert("ইউজারনেম সফলভাবে পরিবর্তন হয়েছে!");
                     lockUsernameInput();
                     if(usernameStatus) usernameStatus.textContent = "";
-                } catch(e) { showCustomAlert("সেভ করা যায়নি: " + e.message); }
+                } catch(e) {
+                    showCustomAlert("সেভ করা যায়নি: " + e.message);
+                }
             };
         }
     }
@@ -32378,14 +32413,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function unlockUsernameInput() {
-        if(usernameInput) { usernameInput.disabled = false; usernameInput.focus(); }
+        if(usernameInput) {
+            usernameInput.disabled = false;
+            usernameInput.focus();
+        }
         if(saveUsernameBtn) saveUsernameBtn.classList.remove('hidden');
         if(editUsernameBtn) editUsernameBtn.classList.add('hidden');
     }
 
-    // --- ফাইল আপলোড এবং রিসিভ লজিক (PeerJS ব্যবহার করে) ---
-    
-    // ফাইল সিলেক্ট হ্যান্ডলার (অপরিবর্তিত)
+    // --- ৪. ফাইল আপলোড লজিক (Global Scope এ ফাংশন দেওয়া) ---
     window.handleCloudFileSelect = function(event) {
         selectedUploadFile = event.target.files[0];
         if (selectedUploadFile) {
@@ -32393,144 +32429,209 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('uploadBtn').disabled = false;
         }
     };
-    
-    // ফাইল পাঠানোর ফাংশন (সম্পূর্ণ পরিবর্তিত)
-    window.uploadFileP2P = async function() {
+
+    window.uploadFileToFirebase = async function() {
         const recipientText = document.getElementById('recipientInput').value.trim();
-        if (!selectedUploadFile || !recipientText) return showCustomAlert("প্রাপক এবং ফাইল উভয়ই নির্বাচন করুন।");
         
+        if (!selectedUploadFile) return showCustomAlert("অনুগ্রহ করে একটি ফাইল নির্বাচন করুন।");
+        if (!recipientText) {
+             document.getElementById('recipientInput').focus();
+             return showCustomAlert("যাকে পাঠাবেন তার ইউজারনেম (@...) বা ইমেইল লিখুন।");
+        }
+
         const btn = document.getElementById('uploadBtn');
+        const progressBar = document.getElementById('uploadProgressBar');
+        const progressContainer = document.getElementById('uploadProgressContainer');
+        const resultDiv = document.getElementById('uploadResult');
+        
         btn.disabled = true;
-        btn.innerText = "কানেক্ট হচ্ছে...";
+        btn.innerText = "আপলোড হচ্ছে...";
+        progressContainer.classList.remove('hidden');
 
         try {
-            // ১. প্রাপকের UID খোঁজা (Firestore ব্যবহার করে)
+            // ১. প্রাপক খোঁজা
             let recipientUID = null;
             let queryText = recipientText.toLowerCase();
+
+            // ইউজারনেম চেক
             let usernameDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'usernames', queryText));
+            // যদি ইউজার @ না দেয়, তবুও চেক করা
             if (!usernameDoc.exists() && !queryText.startsWith('@')) {
                  usernameDoc = await getDoc(doc(db, 'artifacts', appId, 'public', 'data', 'usernames', '@' + queryText));
             }
+
             if (usernameDoc.exists()) {
                 recipientUID = usernameDoc.data().uid;
             } else {
                 throw new Error("ব্যবহারকারী পাওয়া যায়নি। সঠিক ইউজারনেম দিন (যেমন @1)।");
             }
-            
-            // প্রেরকের নাম বের করা
-            const myProfile = await getDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'profile'));
-            const senderName = myProfile.exists() ? myProfile.data().username : "Anonymous";
 
-            // ২. PeerJS কানেকশন তৈরি
-            const conn = peer.connect(recipientUID, { metadata: { senderName } });
+            // ২. ফাইল আপলোড
+            const storagePath = `artifacts/${appId}/shared_files/${Date.now()}_${selectedUploadFile.name}`;
+            const storageRef = ref(storage, storagePath);
+            const uploadTask = uploadBytesResumable(storageRef, selectedUploadFile);
 
-            conn.on('open', () => {
-                btn.innerText = "অনুমতির অপেক্ষা...";
-                
-                // ৩. প্রথমে ফাইলের তথ্য পাঠানো
-                conn.send({
-                    type: 'file-info',
-                    fileName: selectedUploadFile.name,
-                    fileSize: selectedUploadFile.size,
-                    fileType: selectedUploadFile.type,
-                    senderName: senderName
-                });
-            });
+            uploadTask.on('state_changed', 
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    progressBar.style.width = progress + '%';
+                }, 
+                (error) => { throw error; }, 
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    
+                    // ৩. প্রাপকের ইনবক্সে এন্ট্রি তৈরি (রুলস আপডেট করার পর এটি কাজ করবে)
+                    const inboxRef = collection(db, 'artifacts', appId, 'users', recipientUID, 'inbox');
+                    
+                    let senderName = "Anonymous";
+                    // নিজের ইউজারনেম বের করা
+                    const myProfile = await getDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'profile'));
+                    if (myProfile.exists()) senderName = myProfile.data().username;
 
-            conn.on('data', (data) => {
-                if (data.type === 'transfer-accepted') {
-                    // ৪. অনুমোদন পেলে ফাইল পাঠানো শুরু
-                    btn.innerText = "পাঠানো হচ্ছে...";
-                    // PeerJS ফাইলকে ছোট ছোট অংশে ভাগ করে পাঠায়
-                    conn.send({
-                        type: 'file-chunk',
-                        file: selectedUploadFile
+                    await addDoc(inboxRef, {
+                        senderName: senderName,
+                        fileName: selectedUploadFile.name,
+                        fileUrl: downloadURL,
+                        timestamp: serverTimestamp(),
+                        read: false
                     });
-                } else if (data.type === 'transfer-rejected') {
-                    showCustomAlert("প্রাপক ফাইল গ্রহণ করেননি।");
-                    resetSendUI();
-                } else if (data.type === 'transfer-complete') {
-                    showCustomAlert("ফাইল সফলভাবে পাঠানো হয়েছে! ✅");
-                    resetSendUI();
-                    conn.close();
+                    
+                    btn.innerText = "সফল!";
+                    showCustomAlert(`ফাইলটি সফলভাবে ${recipientText}-কে পাঠানো হয়েছে!`);
+                    
+                    // রিসেট
+                    setTimeout(() => { 
+                        btn.innerText = "পাঠান"; 
+                        btn.disabled = false; 
+                        progressContainer.classList.add('hidden');
+                        progressBar.style.width = '0%';
+                        selectedUploadFile = null;
+                        document.getElementById('cloudFileLabel').innerText = "ফাইল বাছুন";
+                    }, 3000);
                 }
-            });
-
-            conn.on('close', () => console.log('Connection closed'));
-            conn.on('error', (err) => {
-                console.error("PeerJS Connection Error:", err);
-                showCustomAlert("কানেকশনে সমস্যা হয়েছে।");
-                resetSendUI();
-            });
+            );
 
         } catch (error) {
-            console.error("P2P Send Error:", error);
-            showCustomAlert(error.message);
-            resetSendUI();
+            console.error("Upload Error:", error);
+            showCustomAlert(error.message); // কাস্টম এলার্ট
+            btn.disabled = false;
+            btn.innerText = "পাঠান";
+            progressContainer.classList.add('hidden');
         }
     };
     
-    // ফাইল পাঠানোর UI রিসেট করার ফাংশন
-    function resetSendUI() {
-        const btn = document.getElementById('uploadBtn');
-        btn.disabled = false;
-        btn.innerText = "পাঠান";
-        selectedUploadFile = null;
-        document.getElementById('cloudFileLabel').innerText = "ফাইল বাছুন";
-        document.getElementById('cloudFileInput').value = '';
-    }
-
-    // নতুন: ফাইল গ্রহণ করার ফাংশন
-    function handleReceivedFile(data, senderName) {
-        const { file } = data;
-        const blob = new Blob([file], { type: file.type });
-        const url = URL.createObjectURL(blob);
-        const list = document.getElementById('inboxList');
-        
-        // যদি "কোনো ফাইল নেই" লেখা থাকে, তা মুছে ফেলা
-        if (list.querySelector('p')) {
-            list.innerHTML = '';
+    // লিঙ্ক কপি ফাংশন (যদি প্রয়োজন হয়)
+    window.copySharedLink = function() {
+        const linkInput = document.getElementById('sharedFileLink');
+        if(linkInput) {
+            linkInput.select();
+            document.execCommand('copy');
+            showCustomAlert("লিঙ্ক কপি করা হয়েছে!");
         }
-        
-        const item = document.createElement('div');
-        item.className = "bg-white dark:bg-gray-600 p-2 rounded shadow-sm border flex justify-between items-center animate-pulse";
-        item.innerHTML = `
-            <div class="overflow-hidden">
-                <p class="font-bold truncate text-gray-800 dark:text-gray-200">${file.name}</p>
-                <p class="text-[10px] text-gray-500 dark:text-gray-300">From: ${senderName || 'Anonymous'}</p>
-            </div>
-            <div class="flex gap-1">
-                <a href="${url}" download="${file.name}" class="p-1 bg-green-500 text-white rounded text-xs">⬇</a>
-                <button class="p-1 bg-red-400 text-white rounded text-xs" onclick="this.parentElement.parentElement.remove(); showCustomAlert('ইনবক্স থেকে সরানো হয়েছে।')">X</button>
-            </div>
-        `;
-        list.prepend(item); // নতুন ফাইল সবার উপরে দেখান
-
-        // প্রাপককে সফলভাবে রিসিভ করার সংকেত পাঠানো
-        const conn = peer.connections[Object.keys(peer.connections)[0]][0];
-        if (conn) conn.send({ type: 'transfer-complete' });
-    }
-
-    // --- ইনবক্স লজিক (অনেকটা খালি, কারণ P2P তে ইনবক্স ডাইনামিক) ---
-    // এই সেকশন এখন আর Firestore এর উপর নির্ভরশীল নয়
-    function listenToInbox(user) {
-        const list = document.getElementById('inboxList');
-        if (list) {
-            list.innerHTML = '<p class="text-center text-xs py-2">রিয়েল-টাইম ফাইল গ্রহণের জন্য প্রস্তুত...</p>';
-        }
-    }
-
-    // ক্লাউড ব্যাকআপ এবং রিস্টোর (Firebase Storage ছাড়া, এটি কাজ করবে না)
-    // ফাংশনগুলো খালি করে দেওয়া হলো যাতে এরর না আসে
-    window.saveSettingsToCloudManually = async function() {
-        showCustomAlert("দুঃখিত, এই ফিচারটি বর্তমানে বন্ধ আছে।");
     };
 
+    // --- ৫. ইনবক্স লিসেনার ---
+    function listenToInbox(user) {
+        if (inboxUnsubscribe) inboxUnsubscribe();
+        const inboxRef = collection(db, 'artifacts', appId, 'users', user.uid, 'inbox');
+        const q = query(inboxRef, orderBy("timestamp", "desc"));
+
+        inboxUnsubscribe = onSnapshot(q, (snapshot) => {
+            const list = document.getElementById('inboxList');
+            if(!list) return;
+            list.innerHTML = '';
+            if (snapshot.empty) {
+                list.innerHTML = '<p class="text-center text-xs py-2">কোনো নতুন ফাইল নেই</p>';
+                return;
+            }
+            snapshot.forEach((docSnap) => {
+                const d = docSnap.data();
+                const time = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleTimeString() : '';
+                const item = document.createElement('div');
+                item.className = "bg-white dark:bg-gray-600 p-2 rounded shadow-sm border flex justify-between";
+                item.innerHTML = `
+                    <div class="overflow-hidden">
+                        <p class="font-bold truncate text-gray-800 dark:text-gray-200">${d.fileName}</p>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-300">From: ${d.senderName} • ${time}</p>
+                    </div>
+                    <div class="flex gap-1">
+                        <a href="${d.fileUrl}" target="_blank" class="p-1 bg-green-500 text-white rounded text-xs">⬇</a>
+                        <button onclick="deleteInboxItem('${docSnap.id}')" class="p-1 bg-red-400 text-white rounded text-xs">X</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        });
+    }
+
+    // ইনবক্স ডিলিট ফাংশন
+    window.deleteInboxItem = async function(id) {
+        if(!currentUser) return;
+        if(confirm("মুছে ফেলতে চান?")) {
+            await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'inbox', id));
+        }
+    };
+
+    // --- ৬. ক্লাউড ব্যাকআপ এবং রিস্টোর ---
+    
+    // ম্যানুয়াল ব্যাকআপ বাটন লজিক (HTML থেকে কল হবে)
+    window.saveSettingsToCloudManually = async function() {
+        if (!currentUser) return showCustomAlert("লগইন করা নেই।");
+        
+        showCustomAlert("ব্যাকআপ তৈরি হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন।");
+        
+        try {
+            // লোকাল স্টোরেজ ডাটা ব্যাকআপ
+            const backupData = {
+                timestamp: new Date().toISOString(),
+                localStorage: { ...localStorage }
+            };
+            const jsonString = JSON.stringify(backupData);
+            const blob = new Blob([jsonString], { type: "application/json" });
+
+            const backupRef = ref(storage, `artifacts/${appId}/users/${currentUser.uid}/backup/settings_backup.json`);
+            await uploadBytesResumable(backupRef, blob);
+
+            showCustomAlert("ব্যাকআপ সফল হয়েছে! ✅"); // সফল মেসেজ
+
+        } catch (e) {
+            console.error("Cloud Backup Error:", e);
+            showCustomAlert("ব্যাকআপ ব্যর্থ হয়েছে।");
+        }
+    };
+
+    // অটোমেটিক রিস্টোর (লগইনের সময়)
     async function restoreSettingsFromCloud(user) {
-        // এই ফাংশনটি এখন কিছু করবে না
-        console.log("Cloud sync is disabled.");
+        try {
+            const backupRef = ref(storage, `artifacts/${appId}/users/${user.uid}/backup/settings_backup.json`);
+            
+            // ফাইল চেক
+            await getDownloadURL(backupRef);
+            
+            // ডাউনলোড
+            const blob = await getBytes(backupRef);
+            const text = new TextDecoder().decode(blob);
+            const data = JSON.parse(text);
+
+            if (data.localStorage) {
+                console.log("Restoring cloud settings...");
+                Object.keys(data.localStorage).forEach(key => {
+                    // API Key বা ক্রিটিক্যাল কিছু ওভাররাইট এড়াতে চাইলে এখানে চেক বসান
+                    if(key !== 'geminiApiKey') { 
+                        localStorage.setItem(key, data.localStorage[key]);
+                    }
+                });
+                showCustomAlert("ক্লাউড থেকে সেটিংস সফলভাবে সিঙ্ক করা হয়েছে!");
+            }
+        } catch (error) {
+            // ব্যাকআপ না থাকলে এরর ইগনোর করুন
+            if (error.code !== 'storage/object-not-found') {
+                console.error("Restore Error:", error);
+            }
+        }
     }
 </script>
+
 <!-- END: Profile and File Transfer FIREBASE LOGIC -->
 
 <!-- ============================================== -->
