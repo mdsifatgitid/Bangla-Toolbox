@@ -7511,7 +7511,7 @@ body.sidebar-open #sidebarOverlay {
 }
 .comment-card.my-message .comment-text-content {
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color: 0.2s;
     border-radius: 4px;
     padding: 2px 4px;
     margin: -2px -4px;
@@ -7615,15 +7615,15 @@ body.sidebar-open #sidebarOverlay {
     -webkit-user-select: text;
     user-select: text;
 }
-/* --- নতুন: প্লেসহোল্ডার স্টাইল (এখানে যুক্ত করা হয়েছে) --- */
-#comment-message[contenteditable="true"]:empty::before {
+/* --- নতুন: প্লেসহোল্ডার স্টাইল (জাভাস্ক্রিপ্ট ক্লাস ভিত্তিক) --- */
+#comment-message[contenteditable="true"].placeholder-visible::before {
     content: attr(data-placeholder);
     color: #9ca3af; /* Tailwind gray-400 */
     pointer-events: none;
     -webkit-user-select: none;
     user-select: none;
 }
-.dark #comment-message[contenteditable="true"]:empty::before {
+.dark #comment-message[contenteditable="true"].placeholder-visible::before {
     color: #6b7280; /* Tailwind gray-500 */
 }
 /* --- প্লেসহোল্ডার স্টাইল শেষ --- */
@@ -32947,6 +32947,22 @@ async function initializePublicComments() {
         
         fabContainer.classList.toggle('hidden', shouldHideFabs);
     }
+    // ========================================================
+    // START: নতুন প্লেসহোল্ডার ম্যানেজমেন্ট কোড (এখানে যুক্ত করা হয়েছে)
+    // ========================================================
+    function checkPlaceholder() {
+        if (msgInput) {
+            // .textContent ব্যবহার করা হয়েছে কারণ এটি <br> ট্যাগকে উপেক্ষা করে।
+            if (msgInput.textContent.trim() === '') {
+                msgInput.classList.add('placeholder-visible');
+            } else {
+                msgInput.classList.remove('placeholder-visible');
+            }
+        }
+    }
+    // ========================================================
+    // END: নতুন প্লেসহোল্ডার ম্যানেজমেন্ট কোড
+    // ========================================================
 
     if (activeCountEl) {
         activeCountEl.onclick = () => {
@@ -33169,12 +33185,22 @@ async function initializePublicComments() {
                 document.execCommand('insertLineBreak');
             } 
         });
+        // বিদ্যমান 'input' ইভেন্ট লিসেনারটি আপডেট করুন
         msgInput.addEventListener('input', function() { 
+            // প্লেসহোল্ডার চেক করার ফাংশনটি এখানে কল করুন
+            checkPlaceholder();
+            
+            // আপনার বিদ্যমান কোড (উচ্চতা অ্যাডজাস্ট করার জন্য)
             const wrapper = msgInputWrapper;
             wrapper.style.height = 'auto'; 
             wrapper.style.height = (wrapper.scrollHeight) + 'px'; 
-            if(this.innerHTML.trim() === '' || this.innerHTML.trim() === '<br>') wrapper.style.height = '40px'; 
+            if(this.innerHTML.trim() === '' || this.innerHTML.trim() === '<br>') {
+                wrapper.style.height = '40px';
+            }
         });
+
+        // ইনিশিয়াল লোডের সময় একবার চেক করুন
+        checkPlaceholder();
     }
     
     // মেসেজ রিয়েল-টাইমে শো করার লজিক
