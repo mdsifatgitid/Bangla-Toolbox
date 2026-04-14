@@ -7217,15 +7217,8 @@ body.sidebar-open #sidebarOverlay {
 /* ========================================= */
 
 /* ==================================================================== */
-/* START: PUBLIC COMMENTS SECTION CSS (UPDATED & REFINED WITH REACTIONS) */
+/* START: PUBLIC COMMENTS SECTION CSS (UPDATED WITH HOVER REACTIONS) */
 /* ==================================================================== */
-
-/* নতুন: এই ক্লাসটি জাভাস্ক্রিপ্ট দিয়ে লং-প্রেসের সময় যুক্ত করা হবে */
-.no-select {
-    user-select: none;
-    -webkit-user-select: none;
-}
-
 #comment-fab {
     position: fixed;
     bottom: 85px;
@@ -7449,7 +7442,6 @@ body.sidebar-open #sidebarOverlay {
     gap: 8px;
     margin-bottom: 8px;
     scroll-margin-top: 85px;
-    /* user-select: none; এই লাইনটি মুছে ফেলা হয়েছে */
 }
 .comment-highlight {
     transition: background-color 0.3s ease-in-out;
@@ -7510,7 +7502,6 @@ body.sidebar-open #sidebarOverlay {
     word-wrap: break-word;
     white-space: pre-wrap;
     line-height: 1.4;
-    /* user-select: text; এই লাইনটি যোগ করা হয়েছে */
     user-select: text;
     -webkit-user-select: text;
 }
@@ -7676,32 +7667,40 @@ body.sidebar-open #sidebarOverlay {
 }
 
 /* ========================================= */
-/* START: NEW REACTION STYLES (নতুন রিয়্যাকশন স্টাইল) */
+/* START: HOVER-BASED REACTION STYLES (পরিবর্তিত) */
 /* ========================================= */
 .reaction-bar {
     position: absolute;
-    background-color: white;
-    dark:bg-gray-700;
+    bottom: 25px; /* রিয়্যাকশন ডিসপ্লের উপরে দেখানোর জন্য */
+    background: white;
     border-radius: 9999px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     padding: 6px 8px;
     display: flex;
     gap: 8px;
-    z-index: 10;
-    transform: translateY(-110%); /* মেসেজের উপরে দেখাবে */
+    z-index: 5; /* অ্যাকশন বারের সমান লেভেল */
     opacity: 0;
     pointer-events: none;
+    transform: translateY(10px); /* নিচে থেকে ওপরে আসার অ্যানিমেশন */
     transition: opacity 0.2s ease-out, transform 0.2s ease-out;
 }
 .dark .reaction-bar {
     background-color: #374151;
     border: 1px solid #4b5563;
 }
-.reaction-bar.show {
+/* হোভার করলে রিয়্যাকশন বার দেখান */
+.comment-card:hover .reaction-bar {
     opacity: 1;
     pointer-events: auto;
-    transform: translateY(-120%);
+    transform: translateY(0);
 }
+.comment-card.my-message .reaction-bar {
+    left: 10px;
+}
+.comment-card.other-message .reaction-bar {
+    right: 10px;
+}
+
 .reaction-option {
     font-size: 1.5rem;
     cursor: pointer;
@@ -7725,6 +7724,10 @@ body.sidebar-open #sidebarOverlay {
     right: auto;
     left: 10px;
 }
+/* হোভার করলে আগের রিয়্যাকশন ডিসপ্লে হাইড করুন */
+.comment-card:hover .comment-reactions-display {
+    opacity: 0;
+}
 .reaction-item {
     background-color: #f1f5f9;
     dark:bg-gray-600;
@@ -7742,7 +7745,7 @@ body.sidebar-open #sidebarOverlay {
     dark:border-gray-500;
 }
 /* ========================================= */
-/* END: NEW REACTION STYLES */
+/* END: HOVER-BASED REACTION STYLES */
 /* ========================================= */
 
 /* ==================================================================== */
@@ -32972,9 +32975,8 @@ function initializeCanvasTools() {
 
 // ২. পাবলিক কমেন্ট সেকশন ফাংশন (অবতার, পাসওয়ার্ড প্রটেকশন, অ্যালাইনমেন্ট ও নোটিফিকেশন ডট এবং একটিভ কাউন্টার সহ)
 // ====================================================================
-// START: PUBLIC COMMENTS SECTION (UPDATED & REFINED WITH REACTIONS)
+// START: PUBLIC COMMENTS SECTION (UPDATED WITH HOVER REACTIONS)
 // ====================================================================
-// START: আপডেটেড পাবলিক কমেন্ট ফাংশন (ফুলস্ক্রিন এবং এন্টার কী ফিক্সড)
 async function initializePublicComments() {
     await ensureAuth();
 
@@ -33016,10 +33018,6 @@ async function initializePublicComments() {
     }
 
     const fabContainer = document.getElementById('floating-action-buttons');
-    
-    // --- নতুন: রিয়্যাকশন ভেরিয়েবল ---
-    let reactionBarTimeout; // লং-প্রেস ডিটেক্ট করার জন্য
-    let activeReactionDocId = null; // কোন মেসেজের জন্য রিয়্যাকশন বার খোলা আছে
 
     function updateFloatingButtonsVisibility() {
         if (!fabContainer || !container) return;
@@ -33450,72 +33448,10 @@ async function initializePublicComments() {
         msgElement.addEventListener('keydown', keydownHandler);
     };
 
-    // --- START: NEW REACTION LOGIC (নতুন রিয়্যাকশন লজিক) ---
+    // --- START: HOVER-BASED REACTION LOGIC (পরিবর্তিত) ---
     const EMOJIS = ['🔥', '❤️', '👍', '👎'];
-
-    function hideReactionBar() {
-        const bar = document.getElementById('reaction-bar');
-        if (bar) {
-            bar.classList.remove('show');
-            setTimeout(() => bar.remove(), 200);
-        }
-        activeReactionDocId = null;
-        document.removeEventListener('click', hideReactionBar);
-    }
     
-    function showReactionBar(cardElement, docId) {
-        hideReactionBar(); // আগের বার থাকলে সরান
-        activeReactionDocId = docId;
-
-        const bar = document.createElement('div');
-        bar.id = 'reaction-bar';
-        bar.className = 'reaction-bar';
-        
-        EMOJIS.forEach(emoji => {
-            const btn = document.createElement('button');
-            btn.className = 'reaction-option';
-            btn.textContent = emoji;
-            btn.onclick = (e) => {
-                e.stopPropagation();
-                handleReaction(docId, emoji);
-                hideReactionBar();
-            };
-            bar.appendChild(btn);
-        });
-
-        document.body.appendChild(bar);
-
-        // পজিশনিং
-        const cardRect = cardElement.getBoundingClientRect();
-        bar.style.left = `${cardRect.left}px`;
-        bar.style.top = `${cardRect.top - bar.offsetHeight - 5}px`;
-
-        setTimeout(() => {
-            bar.classList.add('show');
-            // বাইরে ক্লিক করলে বার হাইড হবে
-            setTimeout(() => document.addEventListener('click', hideReactionBar, { once: true }), 10);
-        }, 10);
-    }
-
-    // লং-প্রেস ডিটেকশন ফাংশন
-    function handlePressStart(event, docId) {
-        if(event.cancelable) event.preventDefault();
-        
-        // *** নতুন পরিবর্তন: সিলেকশন বন্ধ করা ***
-        document.body.classList.add('no-select');
-        
-        reactionBarTimeout = setTimeout(() => {
-            showReactionBar(event.currentTarget, docId);
-        }, 500); // 500ms পর বার দেখাবে
-    }
-
-    function handlePressEnd() {
-        clearTimeout(reactionBarTimeout);
-        // *** নতুন পরিবর্তন: সিলেকশন আবার চালু করা ***
-        document.body.classList.remove('no-select');
-    }
-
-    // Firestore ট্রানজেকশন ব্যবহার করে রিয়্যাকশন হ্যান্ডেল করা
+    // Firestore ট্রানজেকশন ব্যবহার করে রিয়্যাকশন হ্যান্ডেল করা (অপরিবর্তিত)
     async function handleReaction(docId, reaction) {
         if (!auth.currentUser) return showCustomAlert("অনুগ্রহ করে লগইন করুন।");
         
@@ -33533,7 +33469,6 @@ async function initializePublicComments() {
                 const oldReaction = reactorDoc.exists() ? reactorDoc.data().reaction : null;
                 const newReactions = commentDoc.data().reactions || {};
 
-                // যদি আগের রিয়্যাকশন থাকে, তবে তা কমান
                 if (oldReaction) {
                     newReactions[oldReaction] = (newReactions[oldReaction] || 1) - 1;
                     if (newReactions[oldReaction] <= 0) {
@@ -33541,16 +33476,13 @@ async function initializePublicComments() {
                     }
                 }
 
-                // যদি একই রিয়্যাকশন আবার ক্লিক করা হয় (আন-রিয়্যাক্ট)
                 if (oldReaction === reaction) {
                     transaction.delete(reactorRef);
                 } else {
-                    // নতুন রিয়্যাকশন যোগ করা
                     newReactions[reaction] = (newReactions[reaction] || 0) + 1;
                     transaction.set(reactorRef, { reaction: reaction });
                 }
                 
-                // মূল কমেন্ট ডকুমেন্ট আপডেট করা
                 transaction.update(commentRef, { reactions: newReactions });
             });
         } catch (e) {
@@ -33558,7 +33490,7 @@ async function initializePublicComments() {
             showCustomAlert("রিয়্যাক্ট করতে সমস্যা হয়েছে।");
         }
     }
-    // --- END: NEW REACTION LOGIC ---
+    // --- END: HOVER-BASED REACTION LOGIC ---
 
     function renderCommentCard(doc, myUid) {
         const data = doc.data();
@@ -33570,16 +33502,23 @@ async function initializePublicComments() {
         card.id = `comment-${doc.id}`;
         card.className = `comment-card group ${alignClass}`;
         
-        // --- নতুন: রিয়্যাকশন বার এর জন্য ইভেন্ট লিসেনার ---
-        card.addEventListener('mousedown', (e) => handlePressStart(e, doc.id));
-        card.addEventListener('mouseup', handlePressEnd);
-        card.addEventListener('mouseleave', handlePressEnd);
-        card.addEventListener('touchstart', (e) => handlePressStart(e, doc.id), { passive: false });
-        card.addEventListener('touchend', handlePressEnd);
-        
         const pinClass = data.pinned ? 'pinned' : '';
         const pinTitle = data.pinned ? 'আনপিন করুন' : 'পিন করুন';
         
+        // --- রিয়্যাকশন বার তৈরি করা (নতুন) ---
+        const reactionBar = document.createElement('div');
+        reactionBar.className = 'reaction-bar';
+        EMOJIS.forEach(emoji => {
+            const btn = document.createElement('button');
+            btn.className = 'reaction-option';
+            btn.textContent = emoji;
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                handleReaction(doc.id, emoji);
+            };
+            reactionBar.appendChild(btn);
+        });
+
         card.innerHTML = `
             <div class="comment-avatar">${data.avatar || '👤'}</div>
             <div class="comment-content-wrapper">
@@ -33595,6 +33534,9 @@ async function initializePublicComments() {
             </div>
             <div class="comment-reactions-display"></div>
         `;
+        
+        // রিয়্যাকশন বার যুক্ত করা
+        card.appendChild(reactionBar);
 
         const msgContainer = card.querySelector('.comment-msg');
         const tempDiv = document.createElement('div');
@@ -33616,7 +33558,7 @@ async function initializePublicComments() {
 
         msgContainer.innerHTML = `${quoteHtml}<div class="comment-text-content">${mainTextHtml}</div>`;
 
-        // --- নতুন: রিয়্যাকশন ডিসপ্লে রেন্ডার ---
+        // রিয়্যাকশন ডিসপ্লে রেন্ডার
         const reactionsDisplay = card.querySelector('.comment-reactions-display');
         if (data.reactions && Object.keys(data.reactions).length > 0) {
             reactionsDisplay.innerHTML = Object.entries(data.reactions)
@@ -33661,9 +33603,7 @@ async function initializePublicComments() {
         
         if (isMe) {
             const textContentDiv = card.querySelector('.comment-text-content');
-            // --- পরিবর্তন: এখানে title অ্যাট্রিবিউট যোগ করা হয়েছে ---
             textContentDiv.setAttribute('title', 'এডিট করতে ডাবল-ক্লিক করুন');
-            // --- পরিবর্তন: click এর পরিবর্তে dblclick ব্যবহার করা হয়েছে ---
             textContentDiv.addEventListener('dblclick', (e) => {
                 if (window.getSelection().toString().length > 0) return;
                 if (e.target.closest('button')) return;
@@ -33728,7 +33668,6 @@ async function initializePublicComments() {
     
     function escapeHtml(text) { return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : ""; }
 }
-// END: আপডেটেড পাবলিক কমেন্ট ফাংশন
 // ====================================================================
 // END: PUBLIC COMMENTS SECTION
 // ====================================================================
