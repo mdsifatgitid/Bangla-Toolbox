@@ -7217,8 +7217,11 @@ body.sidebar-open #sidebarOverlay {
 /* ========================================= */
 
 /* ==================================================================== */
-/* START: PUBLIC COMMENTS SECTION CSS (UPDATED WITH HOVER REACTIONS) */
+/* START: PUBLIC COMMENTS SECTION CSS (UPDATED WITH CLICK-TO-REACT) */
 /* ==================================================================== */
+/* নতুন: এই ক্লাসটি এখন আর প্রয়োজন নেই, তাই এটি মুছে ফেলা হয়েছে বা খালি রাখা যেতে পারে */
+.no-select { /* This class is no longer used */ }
+
 #comment-fab {
     position: fixed;
     bottom: 85px;
@@ -7667,70 +7670,29 @@ body.sidebar-open #sidebarOverlay {
 }
 
 /* ========================================= */
-/* START: HOVER-BASED REACTION STYLES (পরিবর্তিত) */
+/* START: CLICK-TO-REACT STYLES (পরিবর্তিত) */
 /* ========================================= */
-.reaction-bar {
-    position: absolute;
-    bottom: 25px; /* রিয়্যাকশন ডিসপ্লের উপরে দেখানোর জন্য */
-    background: white;
-    border-radius: 9999px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    padding: 6px 8px;
-    display: flex;
-    gap: 8px;
-    z-index: 5; /* অ্যাকশন বারের সমান লেভেল */
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(10px); /* নিচে থেকে ওপরে আসার অ্যানিমেশন */
-    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-}
-.dark .reaction-bar {
-    background-color: #374151;
-    border: 1px solid #4b5563;
-}
-/* হোভার করলে রিয়্যাকশন বার দেখান */
-.comment-card:hover .reaction-bar {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
-}
-.comment-card.my-message .reaction-bar {
-    left: 10px;
-}
-.comment-card.other-message .reaction-bar {
-    right: 10px;
-}
-
-.reaction-option {
-    font-size: 1.5rem;
-    cursor: pointer;
-    transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    padding: 2px;
-}
-.reaction-option:hover {
-    transform: scale(1.3);
-}
-
-.comment-reactions-display {
+.reaction-container {
     position: absolute;
     bottom: -10px;
     right: 10px;
     display: flex;
+    align-items: flex-end; /* আইটেমগুলোকে নিচে সারিবদ্ধ করবে */
     gap: 4px;
     z-index: 4;
-    transition: opacity 0.2s;
 }
-.comment-card.my-message .comment-reactions-display {
+.comment-card.my-message .reaction-container {
     right: auto;
     left: 10px;
 }
-/* হোভার করলে আগের রিয়্যাকশন ডিসপ্লে হাইড করুন */
-.comment-card:hover .comment-reactions-display {
-    opacity: 0;
+
+.comment-reactions-display {
+    display: flex;
+    gap: 4px;
 }
+
 .reaction-item {
     background-color: #f1f5f9;
-    dark:bg-gray-600;
     padding: 2px 8px;
     border-radius: 9999px;
     display: flex;
@@ -7739,13 +7701,79 @@ body.sidebar-open #sidebarOverlay {
     font-size: 0.75rem;
     font-weight: 500;
     color: #475569;
-    dark:text-gray-200;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     border: 1px solid #e2e8f0;
-    dark:border-gray-500;
 }
+.dark .reaction-item {
+    background-color: #4b5563;
+    color: #e2e8f0;
+    border-color: #6b7280;
+}
+
+.add-reaction-btn {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+.dark .add-reaction-btn {
+    background-color: #4b5563;
+    border-color: #6b7280;
+}
+.add-reaction-btn:hover {
+    background-color: #e2e8f0;
+}
+.dark .add-reaction-btn:hover {
+    background-color: #6b7280;
+}
+
+.reaction-bar {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    transform-origin: bottom center;
+    background: white;
+    border-radius: 9999px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 6px 8px;
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+.dark .reaction-bar {
+    background-color: #374151;
+    border: 1px solid #4b5563;
+}
+.reaction-bar.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) scale(1);
+}
+
+.reaction-option {
+    font-size: 1.25rem; /* ফন্ট সাইজ কমানো হয়েছে */
+    cursor: pointer;
+    transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: 1px;
+}
+.reaction-option:hover {
+    transform: scale(1.3);
+}
+
 /* ========================================= */
-/* END: HOVER-BASED REACTION STYLES */
+/* END: CLICK-TO-REACT STYLES */
 /* ========================================= */
 
 /* ==================================================================== */
@@ -32975,7 +33003,7 @@ function initializeCanvasTools() {
 
 // ২. পাবলিক কমেন্ট সেকশন ফাংশন (অবতার, পাসওয়ার্ড প্রটেকশন, অ্যালাইনমেন্ট ও নোটিফিকেশন ডট এবং একটিভ কাউন্টার সহ)
 // ====================================================================
-// START: PUBLIC COMMENTS SECTION (UPDATED WITH HOVER REACTIONS)
+// START: PUBLIC COMMENTS SECTION (UPDATED WITH CLICK-TO-REACT)
 // ====================================================================
 async function initializePublicComments() {
     await ensureAuth();
@@ -33448,10 +33476,22 @@ async function initializePublicComments() {
         msgElement.addEventListener('keydown', keydownHandler);
     };
 
-    // --- START: HOVER-BASED REACTION LOGIC (পরিবর্তিত) ---
+    // --- START: CLICK-TO-REACT LOGIC (পরিবর্তিত) ---
     const EMOJIS = ['🔥', '❤️', '👍', '👎'];
     
-    // Firestore ট্রানজেকশন ব্যবহার করে রিয়্যাকশন হ্যান্ডেল করা (অপরিবর্তিত)
+    function hideAllReactionBars() {
+        document.querySelectorAll('.reaction-bar.show').forEach(bar => {
+            bar.classList.remove('show');
+        });
+    }
+    
+    // বাইরে ক্লিক করলে সব রিয়্যাকশন বার বন্ধ হবে
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.add-reaction-btn')) {
+            hideAllReactionBars();
+        }
+    });
+
     async function handleReaction(docId, reaction) {
         if (!auth.currentUser) return showCustomAlert("অনুগ্রহ করে লগইন করুন।");
         
@@ -33490,7 +33530,7 @@ async function initializePublicComments() {
             showCustomAlert("রিয়্যাক্ট করতে সমস্যা হয়েছে।");
         }
     }
-    // --- END: HOVER-BASED REACTION LOGIC ---
+    // --- END: CLICK-TO-REACT LOGIC ---
 
     function renderCommentCard(doc, myUid) {
         const data = doc.data();
@@ -33505,20 +33545,6 @@ async function initializePublicComments() {
         const pinClass = data.pinned ? 'pinned' : '';
         const pinTitle = data.pinned ? 'আনপিন করুন' : 'পিন করুন';
         
-        // --- রিয়্যাকশন বার তৈরি করা (নতুন) ---
-        const reactionBar = document.createElement('div');
-        reactionBar.className = 'reaction-bar';
-        EMOJIS.forEach(emoji => {
-            const btn = document.createElement('button');
-            btn.className = 'reaction-option';
-            btn.textContent = emoji;
-            btn.onclick = (e) => {
-                e.stopPropagation();
-                handleReaction(doc.id, emoji);
-            };
-            reactionBar.appendChild(btn);
-        });
-
         card.innerHTML = `
             <div class="comment-avatar">${data.avatar || '👤'}</div>
             <div class="comment-content-wrapper">
@@ -33532,11 +33558,15 @@ async function initializePublicComments() {
                 <button class="comment-action-btn btn-copy" title="কপি">📋</button>
                 <button class="comment-action-btn btn-delete" title="মুছুন">✖</button>
             </div>
-            <div class="comment-reactions-display"></div>
+            <!-- নতুন: রিয়্যাকশন কন্টেইনার -->
+            <div class="reaction-container">
+                <div class="comment-reactions-display"></div>
+                <div class="add-reaction-btn" title="রিয়্যাক্ট করুন">
+                    <span>😊</span>
+                    <div class="reaction-bar"></div>
+                </div>
+            </div>
         `;
-        
-        // রিয়্যাকশন বার যুক্ত করা
-        card.appendChild(reactionBar);
 
         const msgContainer = card.querySelector('.comment-msg');
         const tempDiv = document.createElement('div');
@@ -33557,15 +33587,32 @@ async function initializePublicComments() {
         }
 
         msgContainer.innerHTML = `${quoteHtml}<div class="comment-text-content">${mainTextHtml}</div>`;
-
-        // রিয়্যাকশন ডিসপ্লে রেন্ডার
+        
+        // রিয়্যাকশন ডিসপ্লে এবং বার তৈরি করা
         const reactionsDisplay = card.querySelector('.comment-reactions-display');
+        const addReactionBtn = card.querySelector('.add-reaction-btn');
+        const reactionBar = card.querySelector('.reaction-bar');
+
         if (data.reactions && Object.keys(data.reactions).length > 0) {
             reactionsDisplay.innerHTML = Object.entries(data.reactions)
                 .map(([emoji, count]) => `<div class="reaction-item">${emoji} ${count.toLocaleString('bn-BD')}</div>`)
                 .join('');
         }
         
+        EMOJIS.forEach(emoji => {
+            const btn = document.createElement('button');
+            btn.className = 'reaction-option';
+            btn.textContent = emoji;
+            btn.onclick = (e) => { e.stopPropagation(); handleReaction(doc.id, emoji); };
+            reactionBar.appendChild(btn);
+        });
+        
+        addReactionBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            hideAllReactionBars(); // অন্য সব বার বন্ধ করুন
+            reactionBar.classList.toggle('show');
+        });
+
         listContainer.appendChild(card);
         
         card.querySelector('.btn-pin').addEventListener('click', async () => await setDoc(doc.ref, { pinned: !data.pinned }, { merge: true }));
