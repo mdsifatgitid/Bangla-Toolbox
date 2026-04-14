@@ -7217,11 +7217,8 @@ body.sidebar-open #sidebarOverlay {
 /* ========================================= */
 
 /* ==================================================================== */
-/* START: PUBLIC COMMENTS SECTION CSS (UPDATED WITH CLICK-TO-REACT) */
+/* START: PUBLIC COMMENTS SECTION CSS (UPDATED WITH CLICK-TO-REACT v2) */
 /* ==================================================================== */
-/* নতুন: এই ক্লাসটি এখন আর প্রয়োজন নেই, তাই এটি মুছে ফেলা হয়েছে বা খালি রাখা যেতে পারে */
-.no-select { /* This class is no longer used */ }
-
 #comment-fab {
     position: fixed;
     bottom: 85px;
@@ -7275,7 +7272,7 @@ body.sidebar-open #sidebarOverlay {
 }
 
 #comment-section-container.fullscreen .comment-list {
-    max-height: none; /* ফুলস্ক্রিনে উচ্চতার সীমাবদ্ধতা তুলে দেওয়া হয়েছে */
+    max-height: none; 
 }
 .dark #comment-section-container {
     background-color: #1f2937;
@@ -7557,7 +7554,7 @@ body.sidebar-open #sidebarOverlay {
     transition: opacity 0.2s, top 0.2s;
     pointer-events: none;
     border: 1px solid #e2e8f0;
-    z-index: 5;
+    z-index: 10; /* রিয়্যাকশন বারের উপরে থাকবে */
 }
 .comment-card.my-message .comment-actions { left: 5px; right: auto; }
 .comment-card.other-message .comment-actions { right: 5px; left: auto; }
@@ -7670,20 +7667,20 @@ body.sidebar-open #sidebarOverlay {
 }
 
 /* ========================================= */
-/* START: CLICK-TO-REACT STYLES (পরিবর্তিত) */
+/* START: CLICK-TO-REACT STYLES (v2 - Refined) */
 /* ========================================= */
 .reaction-container {
     position: absolute;
-    bottom: -10px;
-    right: 10px;
+    bottom: -12px;
+    right: 5px;
     display: flex;
-    align-items: flex-end; /* আইটেমগুলোকে নিচে সারিবদ্ধ করবে */
+    align-items: flex-end;
     gap: 4px;
     z-index: 4;
 }
 .comment-card.my-message .reaction-container {
     right: auto;
-    left: 10px;
+    left: 5px;
 }
 
 .comment-reactions-display {
@@ -7693,12 +7690,12 @@ body.sidebar-open #sidebarOverlay {
 
 .reaction-item {
     background-color: #f1f5f9;
-    padding: 2px 8px;
+    padding: 1px 7px; /* প্যাডিং কমানো হয়েছে */
     border-radius: 9999px;
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 0.75rem;
+    font-size: 0.7rem; /* ফন্ট সাইজ কমানো হয়েছে */
     font-weight: 500;
     color: #475569;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
@@ -7712,8 +7709,8 @@ body.sidebar-open #sidebarOverlay {
 
 .add-reaction-btn {
     position: relative;
-    width: 24px;
-    height: 24px;
+    width: 20px; /* সাইজ কমানো হয়েছে */
+    height: 20px; /* সাইজ কমানো হয়েছে */
     background-color: #f1f5f9;
     border: 1px solid #e2e8f0;
     border-radius: 50%;
@@ -7721,12 +7718,14 @@ body.sidebar-open #sidebarOverlay {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 10px;
+    color: #64748b; /* আইকন কালার */
     transition: background-color 0.2s;
 }
 .dark .add-reaction-btn {
     background-color: #4b5563;
     border-color: #6b7280;
+    color: #cbd5e1;
 }
 .add-reaction-btn:hover {
     background-color: #e2e8f0;
@@ -7737,16 +7736,16 @@ body.sidebar-open #sidebarOverlay {
 
 .reaction-bar {
     position: absolute;
-    bottom: 100%;
+    bottom: 120%; /* বাটনের উপরে পজিশন */
     left: 50%;
     transform: translateX(-50%) scale(0.8);
     transform-origin: bottom center;
     background: white;
     border-radius: 9999px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    padding: 6px 8px;
+    padding: 5px 7px; /* প্যাডিং কমানো হয়েছে */
     display: flex;
-    gap: 6px;
+    gap: 5px; /* গ্যাপ কমানো হয়েছে */
     z-index: 10;
     opacity: 0;
     pointer-events: none;
@@ -7763,7 +7762,7 @@ body.sidebar-open #sidebarOverlay {
 }
 
 .reaction-option {
-    font-size: 1.25rem; /* ফন্ট সাইজ কমানো হয়েছে */
+    font-size: 1.1rem; /* ফন্ট সাইজ সামঞ্জস্য করা হয়েছে */
     cursor: pointer;
     transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     padding: 1px;
@@ -7775,7 +7774,6 @@ body.sidebar-open #sidebarOverlay {
 /* ========================================= */
 /* END: CLICK-TO-REACT STYLES */
 /* ========================================= */
-
 /* ==================================================================== */
 /* END: PUBLIC COMMENTS SECTION CSS */
 /* ==================================================================== */
@@ -33003,7 +33001,7 @@ function initializeCanvasTools() {
 
 // ২. পাবলিক কমেন্ট সেকশন ফাংশন (অবতার, পাসওয়ার্ড প্রটেকশন, অ্যালাইনমেন্ট ও নোটিফিকেশন ডট এবং একটিভ কাউন্টার সহ)
 // ====================================================================
-// START: PUBLIC COMMENTS SECTION (UPDATED WITH CLICK-TO-REACT)
+// START: PUBLIC COMMENTS SECTION (UPDATED WITH CLICK-TO-REACT v2)
 // ====================================================================
 async function initializePublicComments() {
     await ensureAuth();
@@ -33228,7 +33226,7 @@ async function initializePublicComments() {
             name, text, avatar: emojiBtn.textContent,
             uid: auth.currentUser ? auth.currentUser.uid : 'anonymous',
             timestamp: serverTimestamp(), createdAt: Date.now(), pinned: false,
-            reactions: {} // নতুন: রিয়্যাকশনের জন্য খালি অবজেক্ট
+            reactions: {} 
         };
 
         if (currentReplyInfo) {
@@ -33476,7 +33474,7 @@ async function initializePublicComments() {
         msgElement.addEventListener('keydown', keydownHandler);
     };
 
-    // --- START: CLICK-TO-REACT LOGIC (পরিবর্তিত) ---
+    // --- START: CLICK-TO-REACT LOGIC (v2 - Refined) ---
     const EMOJIS = ['🔥', '❤️', '👍', '👎'];
     
     function hideAllReactionBars() {
@@ -33562,7 +33560,7 @@ async function initializePublicComments() {
             <div class="reaction-container">
                 <div class="comment-reactions-display"></div>
                 <div class="add-reaction-btn" title="রিয়্যাক্ট করুন">
-                    <span>😊</span>
+                    <span>+</span>
                     <div class="reaction-bar"></div>
                 </div>
             </div>
@@ -33603,14 +33601,22 @@ async function initializePublicComments() {
             const btn = document.createElement('button');
             btn.className = 'reaction-option';
             btn.textContent = emoji;
-            btn.onclick = (e) => { e.stopPropagation(); handleReaction(doc.id, emoji); };
+            btn.onclick = (e) => { 
+                e.stopPropagation(); 
+                handleReaction(doc.id, emoji);
+                hideAllReactionBars(); // রিয়্যাক্ট দেওয়ার পর বার বন্ধ হবে
+            };
             reactionBar.appendChild(btn);
         });
         
         addReactionBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            // যদি এই বারটি ইতোমধ্যে খোলা থাকে, তবে বন্ধ করুন, নাহলে খুলুন
+            const isCurrentlyShown = reactionBar.classList.contains('show');
             hideAllReactionBars(); // অন্য সব বার বন্ধ করুন
-            reactionBar.classList.toggle('show');
+            if (!isCurrentlyShown) {
+                reactionBar.classList.add('show');
+            }
         });
 
         listContainer.appendChild(card);
