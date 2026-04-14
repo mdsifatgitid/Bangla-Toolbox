@@ -33342,23 +33342,18 @@ async function initializePublicComments() {
             saveFunction: saveChanges
         };
         
-const keydownHandler = (e) => {
+        const keydownHandler = (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
-                // শুধু এন্টার চাপলে মেসেজ সেভ হবে
-                e.preventDefault();
-                saveChanges(); 
-            } else if (e.key === 'Enter' && e.shiftKey) {
-                // Shift + Enter চাপলে নতুন লাইন (<br>) যুক্ত হবে
                 e.preventDefault();
                 document.execCommand('insertLineBreak');
             } else if (e.key === 'Escape') {
-                // Escape চাপলে এডিট বাতিল হবে
                 e.preventDefault();
                 msgElement.innerHTML = originalTextContent;
                 cleanup();
             }
         };
         
+        msgElement.addEventListener('blur', saveOnBlur, { once: true });
         msgElement.addEventListener('keydown', keydownHandler);
     };
 
