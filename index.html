@@ -7219,6 +7219,13 @@ body.sidebar-open #sidebarOverlay {
 /* ==================================================================== */
 /* START: PUBLIC COMMENTS SECTION CSS (UPDATED & REFINED WITH REACTIONS) */
 /* ==================================================================== */
+
+/* নতুন: এই ক্লাসটি জাভাস্ক্রিপ্ট দিয়ে লং-প্রেসের সময় যুক্ত করা হবে */
+.no-select {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
 #comment-fab {
     position: fixed;
     bottom: 85px;
@@ -7442,8 +7449,7 @@ body.sidebar-open #sidebarOverlay {
     gap: 8px;
     margin-bottom: 8px;
     scroll-margin-top: 85px;
-    user-select: none; /* লং-প্রেস এর জন্য টেক্সট সিলেকশন বন্ধ করা */
-    -webkit-user-select: none;
+    /* user-select: none; এই লাইনটি মুছে ফেলা হয়েছে */
 }
 .comment-highlight {
     transition: background-color 0.3s ease-in-out;
@@ -7504,7 +7510,8 @@ body.sidebar-open #sidebarOverlay {
     word-wrap: break-word;
     white-space: pre-wrap;
     line-height: 1.4;
-    user-select: text; /* টেক্সট যাতে কপি করা যায় */
+    /* user-select: text; এই লাইনটি যোগ করা হয়েছে */
+    user-select: text;
     -webkit-user-select: text;
 }
 .comment-text-content {
@@ -33493,6 +33500,10 @@ async function initializePublicComments() {
     // লং-প্রেস ডিটেকশন ফাংশন
     function handlePressStart(event, docId) {
         if(event.cancelable) event.preventDefault();
+        
+        // *** নতুন পরিবর্তন: সিলেকশন বন্ধ করা ***
+        document.body.classList.add('no-select');
+        
         reactionBarTimeout = setTimeout(() => {
             showReactionBar(event.currentTarget, docId);
         }, 500); // 500ms পর বার দেখাবে
@@ -33500,6 +33511,8 @@ async function initializePublicComments() {
 
     function handlePressEnd() {
         clearTimeout(reactionBarTimeout);
+        // *** নতুন পরিবর্তন: সিলেকশন আবার চালু করা ***
+        document.body.classList.remove('no-select');
     }
 
     // Firestore ট্রানজেকশন ব্যবহার করে রিয়্যাকশন হ্যান্ডেল করা
