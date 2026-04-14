@@ -7380,7 +7380,7 @@ body.sidebar-open #sidebarOverlay {
     padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 25px; /* পরিবর্তিত: রিএকশনের জন্য গ্যাপ বাড়ানো হয়েছে */
+    gap: 10px;
     background-color: #f8fafc;
 }
 .dark .comment-list {
@@ -7443,9 +7443,10 @@ body.sidebar-open #sidebarOverlay {
     max-width: 85%;
     display: flex;
     gap: 8px;
-    /* পরিবর্তিত: রিএকশনের জন্য মার্জিন বাড়ানো হয়েছে */
-    margin-bottom: 28px;
+    margin-bottom: 8px;
     scroll-margin-top: 85px;
+    /* রিয়্যাকশনের জন্য জায়গা তৈরি */
+    padding-bottom: 28px;
 }
 .comment-highlight {
     transition: background-color 0.3s ease-in-out;
@@ -7667,13 +7668,11 @@ body.sidebar-open #sidebarOverlay {
 /* --- নতুন: রিয়্যাকশন স্টাইল --- */
 .reactions-container {
     position: absolute;
-    /* পরিবর্তিত: বাবলের নিচে পজিশন করা হয়েছে */
-    top: 100%;
-    margin-top: 2px;
+    bottom: 4px;
     display: flex;
     align-items: center;
     gap: 4px;
-    height: auto;
+    height: 24px;
 }
 .my-message .reactions-container { right: 8px; }
 .other-message .reactions-container { left: 8px; }
@@ -7731,6 +7730,9 @@ body.sidebar-open #sidebarOverlay {
 }
 .add-reaction-btn:hover {
     transform: scale(1.1);
+}
+.has-reactions .add-reaction-btn {
+    display: none;
 }
 
 .reaction-popup {
