@@ -32948,23 +32948,13 @@ async function initializePublicComments() {
         fabContainer.classList.toggle('hidden', shouldHideFabs);
     }
     
-    // ========================================================
-    // START: নতুন প্লেসহোল্ডার ম্যানেজমেন্ট কোড (এখানে যুক্ত করা হয়েছে)
-    // ========================================================
     function checkPlaceholder() {
         if (msgInput && msgPlaceholder) {
-            // .textContent অথবা innerHTML চেক করা যায়।
-            // এছাড়াও, কোনো ছবি ট্যাগ থাকলে প্লেসহোল্ডার হাইড করা উচিত।
             const hasText = msgInput.textContent.trim() !== '';
             const hasContent = msgInput.innerHTML.trim() !== '' && msgInput.innerHTML.trim() !== '<br>';
-
-            // যদি টেক্সট বা অন্য কোনো কন্টেন্ট (যেমন ছবি) থাকে, তাহলে প্লেসহোল্ডার হাইড করুন
             msgPlaceholder.classList.toggle('hidden', hasText || hasContent);
         }
     }
-    // ========================================================
-    // END: নতুন প্লেসহোল্ডার ম্যানেজমেন্ট কোড
-    // ========================================================
 
     if (activeCountEl) {
         activeCountEl.onclick = () => {
@@ -33155,6 +33145,9 @@ async function initializePublicComments() {
             await addDoc(commentsRef, dataToSave);
             msgInput.innerHTML = '';
             
+            // --- প্লেসহোল্ডার ফিক্স: মেসেজ পাঠানোর পর ফাংশন কল করা ---
+            checkPlaceholder();
+            
             if (replyPreviewContainer) replyPreviewContainer.classList.add('hidden');
             currentReplyInfo = null;
 
@@ -33283,7 +33276,40 @@ async function initializePublicComments() {
     if(prevPinBtn) prevPinBtn.addEventListener('click', () => showPinnedComment(currentPinnedIndex - 1));
     if(nextPinBtn) nextPinBtn.addEventListener('click', () => showPinnedComment(currentPinnedIndex + 1));
     
+    // ========================================================
+    // START: নতুন এডিট ম্যানেজমেন্ট ভ্যারিয়েবল ও ফাংশন
+    // ========================================================
+    let currentlyEditing = {
+        element: null,
+        originalHtml: '',
+        docId: null,
+        saveFunction: null
+    };
+
+    // এডিট সেভ করার ফাংশন (যেকোনো জায়গা থেকে কল করা যাবে)
+    function saveCurrentEdit() {
+        if (currentlyEditing.element && typeof currentlyEditing.saveFunction === 'function') {
+            currentlyEditing.saveFunction();
+        }
+    }
+
+    // বাইরে ক্লিক করলে এডিট সেভ করার জন্য গ্লোবাল লিসেনার
+    document.addEventListener('click', (e) => {
+        if (currentlyEditing.element) {
+            // যদি এডিট করা এলিমেন্টের বাইরে এবং কোনো অ্যাকশন বাটনের বাইরে ক্লিক করা হয়
+            if (!currentlyEditing.element.contains(e.target) && !e.target.closest('.comment-actions')) {
+                saveCurrentEdit();
+            }
+        }
+    });
+    // ========================================================
+    // END: নতুন এডিট ম্যানেজমেন্ট ভ্যারিয়েবল ও ফাংশন
+    // ========================================================
+
     const handleEditComment = (docId, currentHtml) => {
+        // যদি অন্য কোনো এডিট চালু থাকে, তবে সেটি আগে সেভ করুন
+        saveCurrentEdit();
+
         const card = document.getElementById(`comment-${docId}`);
         if (!card) return;
         const msgElement = card.querySelector('.comment-text-content');
@@ -33303,25 +33329,40 @@ async function initializePublicComments() {
         const cleanup = () => {
             msgElement.setAttribute('contenteditable', 'false');
             msgElement.classList.remove('editing');
-            msgElement.removeEventListener('blur', saveOnBlur);
             msgElement.removeEventListener('keydown', keydownHandler);
+            // এডিট স্টেট রিসেট করুন
+            currentlyEditing.element = null;
+            currentlyEditing.originalHtml = '';
+            currentlyEditing.docId = null;
+            currentlyEditing.saveFunction = null;
         };
 
         const saveChanges = async () => {
+            // যদি এটি আর এডিটিং মোডে না থাকে, তবে কিছু করার দরকার নেই
+            if (!msgElement.classList.contains('editing')) return;
+
             const newTextContent = msgElement.innerHTML.trim();
             const quoteElement = card.querySelector('.reply-quote');
             let newFullHtml = quoteElement ? quoteElement.outerHTML + newTextContent : newTextContent;
             const sanitizedNewHtml = sanitizeHtml(newFullHtml);
 
             if (sanitizedNewHtml.trim() && sanitizedNewHtml !== currentHtml) {
-                await setDoc(doc.ref, { text: sanitizedNewHtml, editedAt: serverTimestamp() }, { merge: true });
+                // ডাটাবেস আপডেট করার জন্য getFirestore, doc, setDoc ইম্পোর্ট করা থাকতে হবে
+                const commentDocRef = doc(db, "artifacts", "banglatoolbox.github.io", "public", "data", "public_comments", docId);
+                await setDoc(commentDocRef, { text: sanitizedNewHtml, editedAt: serverTimestamp() }, { merge: true });
             } else {
                 msgElement.innerHTML = originalTextContent;
             }
             cleanup();
         };
 
-        const saveOnBlur = () => saveChanges();
+        // গ্লোবাল ভ্যারিয়েবলে বর্তমান এডিট স্টেট সেভ করুন
+        currentlyEditing = {
+            element: msgElement,
+            originalHtml: originalTextContent,
+            docId: docId,
+            saveFunction: saveChanges
+        };
         
         const keydownHandler = (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -33334,7 +33375,6 @@ async function initializePublicComments() {
             }
         };
         
-        msgElement.addEventListener('blur', saveOnBlur, { once: true });
         msgElement.addEventListener('keydown', keydownHandler);
     };
 
