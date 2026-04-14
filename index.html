@@ -32916,8 +32916,6 @@ async function initializePublicComments() {
     const emojiContainer = document.getElementById('emoji-picker-container');
     const activeCountEl = document.getElementById('active-user-count');
     const replyPreviewContainer = document.getElementById('reply-preview-container');
-    
-    // --- নতুন: প্লেসহোল্ডার এলিমেন্ট ---
     const msgPlaceholder = document.getElementById('comment-placeholder');
 
     const pinnedContainer = document.getElementById('pinned-comments-container');
@@ -32942,9 +32940,7 @@ async function initializePublicComments() {
 
     function updateFloatingButtonsVisibility() {
         if (!fabContainer || !container) return;
-        
         const shouldHideFabs = container.classList.contains('active') && container.classList.contains('fullscreen');
-        
         fabContainer.classList.toggle('hidden', shouldHideFabs);
     }
     
@@ -33026,11 +33022,9 @@ async function initializePublicComments() {
         fullscreenBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             container.classList.toggle('fullscreen');
-            
             const isFullscreen = container.classList.contains('fullscreen');
             iconEnter.classList.toggle('hidden', isFullscreen);
             iconExit.classList.toggle('hidden', !isFullscreen);
-            
             updateFloatingButtonsVisibility();
         });
     }
@@ -33089,7 +33083,14 @@ async function initializePublicComments() {
     }
     setupEmojiPicker();
     emojiBtn.addEventListener('click', (e) => { e.stopPropagation(); emojiContainer.classList.toggle('hidden'); });
-    document.addEventListener('click', (e) => { if (!emojiContainer.contains(e.target) && e.target !== emojiBtn) emojiContainer.classList.add('hidden'); });
+    
+    // --- ইমোজি পিকার এবং এডিট বক্সের বাইরে ক্লিক করলে বন্ধ করার জন্য গ্লোবাল লিসেনার ---
+    // এই লিসেনারটি handleEditComment এর লিসেনারের সাথে একসাথে কাজ করবে
+    document.addEventListener('click', (e) => {
+        if (!emojiContainer.contains(e.target) && e.target !== emojiBtn) {
+            emojiContainer.classList.add('hidden');
+        }
+    });
 
     const commentsRef = collection(db, "artifacts", "banglatoolbox.github.io", "public", "data", "public_comments");
     
@@ -33144,13 +33145,9 @@ async function initializePublicComments() {
         try {
             await addDoc(commentsRef, dataToSave);
             msgInput.innerHTML = '';
-            
-            // --- প্লেসহোল্ডার ফিক্স: মেসেজ পাঠানোর পর ফাংশন কল করা ---
             checkPlaceholder();
-            
             if (replyPreviewContainer) replyPreviewContainer.classList.add('hidden');
             currentReplyInfo = null;
-
             msgInputWrapper.style.height = '40px';
         } catch (e) {
             console.error("Error sending comment:", e);
@@ -33171,7 +33168,6 @@ async function initializePublicComments() {
         
         msgInput.addEventListener('input', function() { 
             checkPlaceholder();
-            
             const wrapper = msgInputWrapper;
             wrapper.style.height = 'auto'; 
             wrapper.style.height = (wrapper.scrollHeight) + 'px'; 
@@ -33277,37 +33273,40 @@ async function initializePublicComments() {
     if(nextPinBtn) nextPinBtn.addEventListener('click', () => showPinnedComment(currentPinnedIndex + 1));
     
     // ========================================================
-    // START: নতুন এডিট ম্যানেজমেন্ট ভ্যারিয়েবল ও ফাংশন
+    // START: নতুন এডিট ম্যানেজমেন্ট ভ্যারিয়েবল ও ফাংশন (আপডেট করা হয়েছে)
     // ========================================================
     let currentlyEditing = {
         element: null,
         originalHtml: '',
-        docId: null,
+        docRef: null, // docId এর পরিবর্তে doc reference ব্যবহার করা হবে
         saveFunction: null
     };
 
-    // এডিট সেভ করার ফাংশন (যেকোনো জায়গা থেকে কল করা যাবে)
+    // এডিট সেভ করার ফাংশন
     function saveCurrentEdit() {
         if (currentlyEditing.element && typeof currentlyEditing.saveFunction === 'function') {
             currentlyEditing.saveFunction();
         }
     }
 
-    // বাইরে ক্লিক করলে এডিট সেভ করার জন্য গ্লোবাল লিসেনার
-    document.addEventListener('click', (e) => {
-        if (currentlyEditing.element) {
-            // যদি এডিট করা এলিমেন্টের বাইরে এবং কোনো অ্যাকশন বাটনের বাইরে ক্লিক করা হয়
-            if (!currentlyEditing.element.contains(e.target) && !e.target.closest('.comment-actions')) {
-                saveCurrentEdit();
+    // একটি ফ্ল্যাগ যোগ করা হয়েছে যাতে একাধিকবার লিসেনার যুক্ত না হয়
+    let editSaveListenerAdded = false;
+    if (!editSaveListenerAdded) {
+        document.addEventListener('mousedown', (e) => {
+            if (currentlyEditing.element) {
+                // যদি ক্লিক করা এলিমেন্টটি এডিট বক্সের ভেতরে, অ্যাকশন বাটনের ভেতরে বা ইমোজি পিকারের ভেতরে না হয়
+                if (!currentlyEditing.element.contains(e.target) && !e.target.closest('.comment-actions') && !e.target.closest('#emoji-picker-container')) {
+                    saveCurrentEdit();
+                }
             }
-        }
-    });
+        });
+        editSaveListenerAdded = true;
+    }
     // ========================================================
     // END: নতুন এডিট ম্যানেজমেন্ট ভ্যারিয়েবল ও ফাংশন
     // ========================================================
 
-    const handleEditComment = (docId, currentHtml) => {
-        // যদি অন্য কোনো এডিট চালু থাকে, তবে সেটি আগে সেভ করুন
+    const handleEditComment = (docRef, docId, currentHtml) => {
         saveCurrentEdit();
 
         const card = document.getElementById(`comment-${docId}`);
@@ -33330,15 +33329,10 @@ async function initializePublicComments() {
             msgElement.setAttribute('contenteditable', 'false');
             msgElement.classList.remove('editing');
             msgElement.removeEventListener('keydown', keydownHandler);
-            // এডিট স্টেট রিসেট করুন
-            currentlyEditing.element = null;
-            currentlyEditing.originalHtml = '';
-            currentlyEditing.docId = null;
-            currentlyEditing.saveFunction = null;
+            currentlyEditing = { element: null, originalHtml: '', docRef: null, saveFunction: null };
         };
 
         const saveChanges = async () => {
-            // যদি এটি আর এডিটিং মোডে না থাকে, তবে কিছু করার দরকার নেই
             if (!msgElement.classList.contains('editing')) return;
 
             const newTextContent = msgElement.innerHTML.trim();
@@ -33347,27 +33341,24 @@ async function initializePublicComments() {
             const sanitizedNewHtml = sanitizeHtml(newFullHtml);
 
             if (sanitizedNewHtml.trim() && sanitizedNewHtml !== currentHtml) {
-                // ডাটাবেস আপডেট করার জন্য getFirestore, doc, setDoc ইম্পোর্ট করা থাকতে হবে
-                const commentDocRef = doc(db, "artifacts", "banglatoolbox.github.io", "public", "data", "public_comments", docId);
-                await setDoc(commentDocRef, { text: sanitizedNewHtml, editedAt: serverTimestamp() }, { merge: true });
+                await setDoc(docRef, { text: sanitizedNewHtml, editedAt: serverTimestamp() }, { merge: true });
             } else {
                 msgElement.innerHTML = originalTextContent;
             }
             cleanup();
         };
-
-        // গ্লোবাল ভ্যারিয়েবলে বর্তমান এডিট স্টেট সেভ করুন
+        
         currentlyEditing = {
             element: msgElement,
             originalHtml: originalTextContent,
-            docId: docId,
+            docRef: docRef,
             saveFunction: saveChanges
         };
         
         const keydownHandler = (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                document.execCommand('insertLineBreak');
+                saveChanges(); // এন্টার চাপলে সেভ হবে
             } else if (e.key === 'Escape') {
                 e.preventDefault();
                 msgElement.innerHTML = originalTextContent;
@@ -33466,7 +33457,7 @@ async function initializePublicComments() {
                 if (window.getSelection().toString().length > 0) return;
                 if (e.target.closest('button')) return;
                 if (textContentDiv.isContentEditable) return;
-                handleEditComment(doc.id, data.text);
+                handleEditComment(doc.ref, doc.id, data.text);
             });
         }
         
