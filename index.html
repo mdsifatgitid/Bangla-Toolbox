@@ -32892,49 +32892,9 @@ function initializeCanvasTools() {
     }
 
 // ২. পাবলিক কমেন্ট সেকশন ফাংশন (অবতার, পাসওয়ার্ড প্রটেকশন, অ্যালাইনমেন্ট ও নোটিফিকেশন ডট এবং একটিভ কাউন্টার সহ)
-<!-- ====================================================================-->
-<!-- START: FIREBASE SCRIPT (Visitor Counter & Public Comments with Avatar & Presence) -->
-<!-- ====================================================================-->
-<script type="module">
-    // আপনার ওয়েব অ্যাপের Firebase কনফিগারেশন
-    const firebaseConfig = {
-        apiKey: "AIzaSyBmTptSZWbNB5MrT8jIWVm6knak2L2Xv40",
-        authDomain: "bangla-toolbox1.firebaseapp.com",
-        projectId: "bangla-toolbox1",
-        storageBucket: "bangla-toolbox1.firebasestorage.app",
-        messagingSenderId: "345647713379",
-        appId: "1:345647713379:web:d3e121c3a7e258b971bc56",
-        measurementId: "G-6NVS7YFNBX"
-    };
-
-    // Firebase ফাংশনগুলো ইম্পোর্ট (setDoc যুক্ত করা হয়েছে)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { 
-        getFirestore, doc, runTransaction, onSnapshot, 
-        collection, addDoc, deleteDoc, query, orderBy, 
-        serverTimestamp, getDocs, where, writeBatch, setDoc 
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
-
-    // Firebase অ্যাপ ইনিশিয়ালাইজেশন
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-    const analytics = getAnalytics(app);
-
-    // অথেন্টিকেশন স্ট্যাটাস চেক এবং সাইন ইন
-    async function ensureAuth() {
-        if (!auth.currentUser) {
-            try {
-                await signInAnonymously(auth);
-                console.log("User signed in anonymously");
-            } catch (error) {
-                console.error("Auth Error:", error);
-            }
-        }
-    }
-
+// ====================================================================
+// START: PUBLIC COMMENTS SECTION (UPDATED & REFINED)
+// ====================================================================
 // START: আপডেটেড পাবলিক কমেন্ট ফাংশন (ফুলস্ক্রিন এবং এন্টার কী ফিক্সড)
 async function initializePublicComments() {
     await ensureAuth();
@@ -33192,7 +33152,7 @@ async function initializePublicComments() {
 
     if (msgInput) {
         msgInput.addEventListener('keydown', (e) => { 
-            if (e.key === 'Enter') { 
+            if (e.key === 'Enter' && !e.shiftKey) { 
                 e.preventDefault(); 
                 document.execCommand('insertLineBreak');
             } 
@@ -33305,39 +33265,37 @@ async function initializePublicComments() {
     if(nextPinBtn) nextPinBtn.addEventListener('click', () => showPinnedComment(currentPinnedIndex + 1));
     
     // ========================================================
-    // START: এডিট ম্যানেজমেন্ট ভ্যারিয়েবল ও ফাংশন (আপনার অনুরোধ অনুযায়ী সংশোধিত)
+    // START: নতুন এডিট ম্যানেজমেন্ট ভ্যারিয়েবল ও ফাংশন (আপডেট করা হয়েছে)
     // ========================================================
     let currentlyEditing = {
         element: null,
+        docRef: null,
         saveFunction: null
     };
 
-    // অন্য কোনো এডিট চালু থাকলে সেটি সেভ করার ফাংশন
     function saveCurrentEdit() {
         if (currentlyEditing.element && typeof currentlyEditing.saveFunction === 'function') {
             currentlyEditing.saveFunction();
         }
     }
-    
-    // বাইরে ক্লিক করলে সেভ করার জন্য গ্লোবাল ইভেন্ট লিসেনার
+
     let editSaveListenerAdded = false;
     if (!editSaveListenerAdded) {
         document.addEventListener('mousedown', (e) => {
             if (currentlyEditing.element) {
-                // যদি ক্লিক করা স্থানটি এডিটেবল এলিমেন্টের বাইরে হয় এবং অ্যাকশন বাটনেও না হয়
                 if (!currentlyEditing.element.contains(e.target) && !e.target.closest('.comment-actions')) {
                     saveCurrentEdit();
                 }
             }
-        }, true); // Use capture phase
+        }, true); // Use capture phase to catch the event early
         editSaveListenerAdded = true;
     }
     // ========================================================
-    // END: এডিট ম্যানেজমেন্ট ভ্যারিয়েবল ও ফাংশন
+    // END: নতুন এডিট ম্যানেজমেন্ট ভ্যারিয়েবল ও ফাংশন
     // ========================================================
 
     const handleEditComment = (docRef, docId, currentHtml) => {
-        saveCurrentEdit(); // অন্য কোনো এডিট চালু থাকলে আগে সেভ করুন
+        saveCurrentEdit(); // অন্য কোনো এডিট চালু থাকলে সেভ করুন
 
         const card = document.getElementById(`comment-${docId}`);
         const msgElement = card?.querySelector('.comment-text-content');
@@ -33347,8 +33305,7 @@ async function initializePublicComments() {
         msgElement.setAttribute('contenteditable', 'true');
         msgElement.classList.add('editing');
         msgElement.focus();
-        
-        // কার্সর লেখার শেষে নিয়ে যান
+        // কার্সর শেষে নিন
         const range = document.createRange();
         const sel = window.getSelection();
         range.selectNodeContents(msgElement);
@@ -33356,17 +33313,15 @@ async function initializePublicComments() {
         sel.removeAllRanges();
         sel.addRange(range);
 
-        // এডিট শেষ হলে কল করার জন্য ফাংশন
-        const cleanupAndReset = () => {
+        const cleanup = () => {
             msgElement.setAttribute('contenteditable', 'false');
             msgElement.classList.remove('editing');
             msgElement.removeEventListener('keydown', keydownHandler);
-            // গ্লোবাল এডিটিং স্টেট রিসেট করুন
-            currentlyEditing = { element: null, saveFunction: null };
+            currentlyEditing = { element: null, docRef: null, saveFunction: null };
         };
 
         const saveChanges = async () => {
-            if (!msgElement.classList.contains('editing')) return; // একাধিকবার সেভ হওয়া প্রতিরোধ
+            if (!msgElement.classList.contains('editing')) return;
 
             const newHtml = msgElement.innerHTML.trim();
             const quoteEl = card.querySelector('.reply-quote');
@@ -33376,27 +33331,31 @@ async function initializePublicComments() {
             if (sanitizedHtml.trim() && sanitizedHtml !== currentHtml) {
                 await setDoc(docRef, { text: sanitizedHtml, editedAt: serverTimestamp() }, { merge: true });
             } else {
-                msgElement.innerHTML = originalHtml; // কোনো পরিবর্তন না হলে আগের অবস্থায় ফিরে যাবে
+                msgElement.innerHTML = originalHtml;
             }
-            cleanupAndReset();
+            cleanup();
         };
-        
-        // গ্লোবাল এডিটিং স্টেট সেট করুন
+
         currentlyEditing = {
             element: msgElement,
+            docRef: docRef,
             saveFunction: saveChanges
         };
         
-        // কী-বোর্ড ইভেন্ট লিসেনার
-        const keydownHandler = (e) => {
-            // Shift+Enter বা শুধু Enter চাপলে নতুন লাইন তৈরি হবে
-            if (e.key === 'Enter') { 
+const keydownHandler = (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                // শুধু এন্টার চাপলে মেসেজ সেভ হবে
+                e.preventDefault();
+                saveChanges(); 
+            } else if (e.key === 'Enter' && e.shiftKey) {
+                // Shift + Enter চাপলে নতুন লাইন (<br>) যুক্ত হবে
                 e.preventDefault();
                 document.execCommand('insertLineBreak');
             } else if (e.key === 'Escape') {
+                // Escape চাপলে এডিট বাতিল হবে
                 e.preventDefault();
-                msgElement.innerHTML = originalHtml;
-                cleanupAndReset();
+                msgElement.innerHTML = originalTextContent;
+                cleanup();
             }
         };
         
@@ -33487,10 +33446,11 @@ async function initializePublicComments() {
         
         if (isMe) {
             const textContentDiv = card.querySelector('.comment-text-content');
-            textContentDiv.setAttribute('title', 'এডিট করতে ক্লিক করুন');
-            // পরিবর্তন: dblclick থেকে click করা হয়েছে এবং সিলেকশন চেক যোগ করা হয়েছে
-            textContentDiv.addEventListener('click', (e) => {
-                if (window.getSelection().toString().length > 0) return; // টেক্সট সিলেক্ট করলে এডিট মোড চালু হবে না
+            // --- পরিবর্তন: এখানে title অ্যাট্রিবিউট যোগ করা হয়েছে ---
+            textContentDiv.setAttribute('title', 'এডিট করতে ডাবল-ক্লিক করুন');
+            // --- পরিবর্তন: click এর পরিবর্তে dblclick ব্যবহার করা হয়েছে ---
+            textContentDiv.addEventListener('dblclick', (e) => {
+                if (window.getSelection().toString().length > 0) return;
                 if (e.target.closest('button')) return;
                 if (textContentDiv.isContentEditable) return;
                 handleEditComment(doc.ref, doc.id, data.text);
@@ -33560,9 +33520,9 @@ async function initializePublicComments() {
 
     // ইনিশিয়ালাইজেশন
     // আমরা প্রথমে কাউন্টার ইনিশিয়ালাইজ করব, তারপর কমেন্টস, যাতে অথেন্টিকেশন নিশ্চিত হয়
-    // initializeGlobalCounter().then(() => {
-    //     initializePublicComments();
-    // });
+    initializeGlobalCounter().then(() => {
+        initializePublicComments();
+    });
 
 </script>
 <!-- ====================================================================-->
@@ -33635,7 +33595,9 @@ async function initializePublicComments() {
         <span>পাবলিক মেসেজ</span>
         <div class="flex items-center gap-2 ml-auto">
              <span id="active-user-count" class="bg-white text-blue-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm flex items-center gap-1 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors" title="ভিজিটর কাউন্টার দেখুন">
-                <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                 </span>
                 একটিভ: ১
             </span>
