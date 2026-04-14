@@ -33083,14 +33083,6 @@ async function initializePublicComments() {
     }
     setupEmojiPicker();
     emojiBtn.addEventListener('click', (e) => { e.stopPropagation(); emojiContainer.classList.toggle('hidden'); });
-    
-    // --- ইমোজি পিকার এবং এডিট বক্সের বাইরে ক্লিক করলে বন্ধ করার জন্য গ্লোবাল লিসেনার ---
-    // এই লিসেনারটি handleEditComment এর লিসেনারের সাথে একসাথে কাজ করবে
-    document.addEventListener('click', (e) => {
-        if (!emojiContainer.contains(e.target) && e.target !== emojiBtn) {
-            emojiContainer.classList.add('hidden');
-        }
-    });
 
     const commentsRef = collection(db, "artifacts", "banglatoolbox.github.io", "public", "data", "public_comments");
     
@@ -33277,29 +33269,25 @@ async function initializePublicComments() {
     // ========================================================
     let currentlyEditing = {
         element: null,
-        originalHtml: '',
-        docRef: null, // docId এর পরিবর্তে doc reference ব্যবহার করা হবে
+        docRef: null,
         saveFunction: null
     };
 
-    // এডিট সেভ করার ফাংশন
     function saveCurrentEdit() {
         if (currentlyEditing.element && typeof currentlyEditing.saveFunction === 'function') {
             currentlyEditing.saveFunction();
         }
     }
 
-    // একটি ফ্ল্যাগ যোগ করা হয়েছে যাতে একাধিকবার লিসেনার যুক্ত না হয়
     let editSaveListenerAdded = false;
     if (!editSaveListenerAdded) {
         document.addEventListener('mousedown', (e) => {
             if (currentlyEditing.element) {
-                // যদি ক্লিক করা এলিমেন্টটি এডিট বক্সের ভেতরে, অ্যাকশন বাটনের ভেতরে বা ইমোজি পিকারের ভেতরে না হয়
-                if (!currentlyEditing.element.contains(e.target) && !e.target.closest('.comment-actions') && !e.target.closest('#emoji-picker-container')) {
+                if (!currentlyEditing.element.contains(e.target) && !e.target.closest('.comment-actions')) {
                     saveCurrentEdit();
                 }
             }
-        });
+        }, true); // Use capture phase to catch the event early
         editSaveListenerAdded = true;
     }
     // ========================================================
@@ -33307,17 +33295,17 @@ async function initializePublicComments() {
     // ========================================================
 
     const handleEditComment = (docRef, docId, currentHtml) => {
-        saveCurrentEdit();
+        saveCurrentEdit(); // অন্য কোনো এডিট চালু থাকলে সেভ করুন
 
         const card = document.getElementById(`comment-${docId}`);
-        if (!card) return;
-        const msgElement = card.querySelector('.comment-text-content');
+        const msgElement = card?.querySelector('.comment-text-content');
         if (!msgElement) return;
 
-        const originalTextContent = msgElement.innerHTML;
+        const originalHtml = msgElement.innerHTML;
         msgElement.setAttribute('contenteditable', 'true');
         msgElement.classList.add('editing');
         msgElement.focus();
+        // কার্সর শেষে নিন
         const range = document.createRange();
         const sel = window.getSelection();
         range.selectNodeContents(msgElement);
@@ -33329,28 +33317,27 @@ async function initializePublicComments() {
             msgElement.setAttribute('contenteditable', 'false');
             msgElement.classList.remove('editing');
             msgElement.removeEventListener('keydown', keydownHandler);
-            currentlyEditing = { element: null, originalHtml: '', docRef: null, saveFunction: null };
+            currentlyEditing = { element: null, docRef: null, saveFunction: null };
         };
 
         const saveChanges = async () => {
             if (!msgElement.classList.contains('editing')) return;
 
-            const newTextContent = msgElement.innerHTML.trim();
-            const quoteElement = card.querySelector('.reply-quote');
-            let newFullHtml = quoteElement ? quoteElement.outerHTML + newTextContent : newTextContent;
-            const sanitizedNewHtml = sanitizeHtml(newFullHtml);
+            const newHtml = msgElement.innerHTML.trim();
+            const quoteEl = card.querySelector('.reply-quote');
+            let fullHtml = quoteEl ? quoteEl.outerHTML + newHtml : newHtml;
+            const sanitizedHtml = sanitizeHtml(fullHtml);
 
-            if (sanitizedNewHtml.trim() && sanitizedNewHtml !== currentHtml) {
-                await setDoc(docRef, { text: sanitizedNewHtml, editedAt: serverTimestamp() }, { merge: true });
+            if (sanitizedHtml.trim() && sanitizedHtml !== currentHtml) {
+                await setDoc(docRef, { text: sanitizedHtml, editedAt: serverTimestamp() }, { merge: true });
             } else {
-                msgElement.innerHTML = originalTextContent;
+                msgElement.innerHTML = originalHtml;
             }
             cleanup();
         };
-        
+
         currentlyEditing = {
             element: msgElement,
-            originalHtml: originalTextContent,
             docRef: docRef,
             saveFunction: saveChanges
         };
@@ -33358,10 +33345,10 @@ async function initializePublicComments() {
         const keydownHandler = (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                saveChanges(); // এন্টার চাপলে সেভ হবে
+                saveChanges();
             } else if (e.key === 'Escape') {
                 e.preventDefault();
-                msgElement.innerHTML = originalTextContent;
+                msgElement.innerHTML = originalHtml;
                 cleanup();
             }
         };
@@ -33453,7 +33440,10 @@ async function initializePublicComments() {
         
         if (isMe) {
             const textContentDiv = card.querySelector('.comment-text-content');
-            textContentDiv.addEventListener('click', (e) => {
+            // --- পরিবর্তন: এখানে title অ্যাট্রিবিউট যোগ করা হয়েছে ---
+            textContentDiv.setAttribute('title', 'এডিট করতে ডাবল-ক্লিক করুন');
+            // --- পরিবর্তন: click এর পরিবর্তে dblclick ব্যবহার করা হয়েছে ---
+            textContentDiv.addEventListener('dblclick', (e) => {
                 if (window.getSelection().toString().length > 0) return;
                 if (e.target.closest('button')) return;
                 if (textContentDiv.isContentEditable) return;
