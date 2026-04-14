@@ -7664,9 +7664,9 @@ body.sidebar-open #sidebarOverlay {
     pointer-events: auto;
 }
 
-/* --- নতুন: রিয়্যাকশন স্টাইল --- */
+/* --- নতুন: রিয়্যাকশন স্টাইল (পরিবর্তিত) --- */
 .reactions-container {
-    position: absolute;
+    position: absolute !important; /* JS ক্লাসকে ওভাররাইড করার জন্য !important যোগ করা হয়েছে */
     bottom: 4px;
     display: flex;
     align-items: center;
@@ -33299,7 +33299,33 @@ async function initializePublicComments() {
     }
     
     let isInitialLoad = true;
+    
+    // ====================================================================
+    // START: UPDATED onSnapshot FUNCTION (Auto-scroll fix)
+    // ====================================================================
     onSnapshot(query(commentsRef, orderBy("timestamp", "asc")), (snapshot) => {
+        // নতুন মেসেজ এলে অটো-স্ক্রোল করার জন্য বর্তমান স্ক্রোল পজিশন সেভ করুন
+        const isScrolledToBottom = listContainer.scrollHeight - listContainer.clientHeight <= listContainer.scrollTop + 20; // 20px tolerance
+        let wasNewMessageAdded = false;
+
+        // শুধু নতুন মেসেজের জন্য নোটিফিকেশন এবং স্ক্রোল ফ্ল্যাগ সেট করুন
+        if (!isInitialLoad) {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    wasNewMessageAdded = true;
+                    const data = change.doc.data();
+                    const isRecent = (Date.now() - data.createdAt) < 10000;
+                    if (data.uid !== (auth.currentUser ? auth.currentUser.uid : null) && isRecent) {
+                        showNewMessageNotification(data);
+                        if (!container.classList.contains('active')) {
+                            if (notificationDot) notificationDot.classList.remove('hidden');
+                        }
+                    }
+                }
+            });
+        }
+        
+        // লিস্ট রি-রেন্ডার করুন
         listContainer.innerHTML = '';
         const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
         const allDocs = snapshot.docs.filter(doc => {
@@ -33316,29 +33342,20 @@ async function initializePublicComments() {
         allDocs.forEach(doc => renderCommentCard(doc, myUid));
         renderPinnedSection(pinnedDocs);
 
-        if (isInitialLoad || container.classList.contains('active')) {
+        // শর্তসাপেক্ষে স্ক্রোল করুন
+        if (isInitialLoad || (wasNewMessageAdded && isScrolledToBottom)) {
             listContainer.scrollTop = listContainer.scrollHeight;
         }
-        if (!isInitialLoad) {
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === "added") {
-                    const data = change.doc.data();
-                    const isRecent = (Date.now() - data.createdAt) < 10000;
-                    if (data.uid !== myUid && isRecent) {
-                        showNewMessageNotification(data);
-                        if (!container.classList.contains('active')) {
-                            if (notificationDot) notificationDot.classList.remove('hidden');
-                        }
-                    }
-                }
-            });
-        }
-        isInitialLoad = false; 
+
+        isInitialLoad = false;
     }, (error) => {
         console.error("Snapshot Error:", error);
         listContainer.innerHTML = '<div class="text-center text-red-400 mt-10 text-sm">ডেটা লোড করতে সমস্যা হচ্ছে।</div>';
     });
-    
+    // ====================================================================
+    // END: UPDATED onSnapshot FUNCTION
+    // ====================================================================
+
     function renderPinnedSection(pinnedDocs) {
         if (pinnedDocs.length > 0) {
             pinnedContainer.classList.remove('hidden');
