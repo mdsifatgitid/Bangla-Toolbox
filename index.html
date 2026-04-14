@@ -7380,7 +7380,7 @@ body.sidebar-open #sidebarOverlay {
     padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 25px; /* পরিবর্তিত: রিএকশনের জন্য গ্যাপ বাড়ানো হয়েছে */
     background-color: #f8fafc;
 }
 .dark .comment-list {
@@ -7443,10 +7443,9 @@ body.sidebar-open #sidebarOverlay {
     max-width: 85%;
     display: flex;
     gap: 8px;
-    margin-bottom: 8px;
+    /* পরিবর্তিত: রিএকশনের জন্য মার্জিন বাড়ানো হয়েছে */
+    margin-bottom: 28px;
     scroll-margin-top: 85px;
-    /* রিয়্যাকশনের জন্য জায়গা তৈরি */
-    padding-bottom: 28px;
 }
 .comment-highlight {
     transition: background-color 0.3s ease-in-out;
@@ -7737,8 +7736,8 @@ body.sidebar-open #sidebarOverlay {
 
 .reaction-popup {
     position: absolute;
-    bottom: 100%;
-    margin-bottom: 8px;
+    top: 50%; /* নতুন: উল্লম্বভাবে মাঝখানে আনার জন্য */
+    transform: translateY(-50%); /* নতুন: উল্লম্বভাবে সঠিকভাবে মাঝখানে আনার জন্য */
     background: none;
     border-radius: 16px;
     padding: 0;
@@ -7751,16 +7750,18 @@ body.sidebar-open #sidebarOverlay {
 }
 
 @keyframes popup-scale-in {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    from { transform: translateY(-50%) scale(0.8); opacity: 0; } /* পরিবর্তিত */
+    to { transform: translateY(-50%) scale(1); opacity: 1; } /* পরিবর্তিত */
 }
 .my-message .reaction-popup {
-    right: 0;
-    transform-origin: bottom right;
+    right: 100%; /* নতুন: কন্টেইনারের বাম পাশে দেখাবে */
+    margin-right: 8px; /* নতুন: فاصله তৈরি করার জন্য */
+    transform-origin: right center; /* পরিবর্তিত */
 }
 .other-message .reaction-popup {
-    left: 0;
-    transform-origin: bottom left;
+    left: 100%; /* নতুন: কন্টেইনারের ডান পাশে দেখাবে */
+    margin-left: 8px; /* নতুন: فاصله তৈরি করার জন্য */
+    transform-origin: left center; /* পরিবর্তিত */
 }
 
 .reaction-choice {
