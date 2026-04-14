@@ -7380,7 +7380,7 @@ body.sidebar-open #sidebarOverlay {
     padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 25px; /* পরিবর্তিত: রিএকশনের জন্য গ্যাপ বাড়ানো হয়েছে */
     background-color: #f8fafc;
 }
 .dark .comment-list {
@@ -7443,9 +7443,9 @@ body.sidebar-open #sidebarOverlay {
     max-width: 85%;
     display: flex;
     gap: 8px;
-    margin-bottom: 8px;
+    /* পরিবর্তিত: রিএকশনের জন্য মার্জিন বাড়ানো হয়েছে */
+    margin-bottom: 28px;
     scroll-margin-top: 85px;
-    padding-bottom: 28px; /* রিয়্যাকশনের জন্য জায়গা */
 }
 .comment-highlight {
     transition: background-color 0.3s ease-in-out;
@@ -7664,14 +7664,16 @@ body.sidebar-open #sidebarOverlay {
     pointer-events: auto;
 }
 
-/* --- নতুন: রিয়্যাকশন স্টাইল (পজিশন পরিবর্তিত) --- */
+/* --- নতুন: রিয়্যাকশন স্টাইল --- */
 .reactions-container {
     position: absolute;
-    bottom: 4px;
+    /* পরিবর্তিত: বাবলের নিচে পজিশন করা হয়েছে */
+    top: 100%;
+    margin-top: 2px;
     display: flex;
     align-items: center;
     gap: 4px;
-    height: 24px;
+    height: auto;
 }
 .my-message .reactions-container { right: 8px; }
 .other-message .reactions-container { left: 8px; }
@@ -7730,14 +7732,13 @@ body.sidebar-open #sidebarOverlay {
 .add-reaction-btn:hover {
     transform: scale(1.1);
 }
-.has-reactions .add-reaction-btn {
-    display: none;
-}
 
 .reaction-popup {
     position: absolute;
-    bottom: calc(100% + 5px); /* পরিবর্তন: রিয়্যাকশন কন্টেইনারের উপরে দেখাবে */
+    bottom: 100%;
+    margin-bottom: 8px;
     background: none;
+    border-radius: 16px;
     padding: 0;
     box-shadow: none;
     display: flex;
@@ -7748,16 +7749,16 @@ body.sidebar-open #sidebarOverlay {
 }
 
 @keyframes popup-scale-in {
-    from { transform: translateY(10px) scale(0.8); opacity: 0; } /* পরিবর্তন: নিচ থেকে উপরে আসবে */
-    to { transform: translateY(0) scale(1); opacity: 1; }
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
 }
 .my-message .reaction-popup {
     right: 0;
-    transform-origin: bottom right; /* পরিবর্তন: অ্যানিমেশন কেন্দ্র ঠিক করা হয়েছে */
+    transform-origin: bottom right;
 }
 .other-message .reaction-popup {
     left: 0;
-    transform-origin: bottom left; /* পরিবর্তন: অ্যানিমেশন কেন্দ্র ঠিক করা হয়েছে */
+    transform-origin: bottom left;
 }
 
 .reaction-choice {
