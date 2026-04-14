@@ -7737,8 +7737,8 @@ body.sidebar-open #sidebarOverlay {
 
 .reaction-popup {
     position: absolute;
-    bottom: 100%;
-    margin-bottom: 8px;
+    top: 100%; /* পরিবর্তন: bottom থেকে top করা হয়েছে */
+    margin-top: 8px; /* পরিবর্তন: margin-bottom থেকে margin-top করা হয়েছে */
     background: none;
     border-radius: 16px;
     padding: 0;
@@ -7756,11 +7756,11 @@ body.sidebar-open #sidebarOverlay {
 }
 .my-message .reaction-popup {
     right: 0;
-    transform-origin: bottom right;
+    transform-origin: top right; /* পরিবর্তন: bottom থেকে top করা হয়েছে */
 }
 .other-message .reaction-popup {
     left: 0;
-    transform-origin: bottom left;
+    transform-origin: top left; /* পরিবর্তন: bottom থেকে top করা হয়েছে */
 }
 
 .reaction-choice {
