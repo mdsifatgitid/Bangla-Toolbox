@@ -33172,6 +33172,10 @@ function initializePcVoiceClient() {
         });
     }
 
+// বাটনের আসল টেক্সট একবারই সেভ করে রাখা হচ্ছে
+    const originalBtnTextBn = btnBn ? btnBn.innerHTML : '🎤 বাংলা';
+    const originalBtnTextEn = btnEn ? btnEn.innerHTML : '🎤 English';
+
     // ওয়েব এপিআই ভয়েস বাটন
     const startVoice = (lang) => {
         if (!SpeechRec) {
@@ -33184,12 +33188,12 @@ function initializePcVoiceClient() {
         rec.continuous = false;
         rec.interimResults = false;
 
-        const originalBtnTextEn = btnEn.innerHTML;
-        const originalBtnTextBn = btnBn.innerHTML;
-
         rec.onstart = () => {
-            if(lang === 'bn-BD') btnBn.innerText = 'শুনছি...';
-            else btnEn.innerText = 'Listening...';
+            if(lang === 'bn-BD') {
+                btnBn.innerText = 'শুনছি...';
+            } else {
+                btnEn.innerText = 'Listening...';
+            }
         };
 
         rec.onresult = (e) => {
@@ -33212,8 +33216,9 @@ function initializePcVoiceClient() {
         };
 
         rec.onend = () => {
-            btnBn.innerHTML = originalBtnTextBn;
-            btnEn.innerHTML = originalBtnTextEn;
+            // কথা বলা শেষ হলে বা এরর হলে আবার আগের অবস্থায় ফিরে যাবে
+            if(btnBn) btnBn.innerHTML = originalBtnTextBn;
+            if(btnEn) btnEn.innerHTML = originalBtnTextEn;
         };
 
         try { rec.start(); } catch(err) {}
