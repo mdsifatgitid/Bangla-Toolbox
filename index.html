@@ -33156,23 +33156,22 @@ function initializePcVoiceClient() {
             localStorage.setItem('lastPcVoiceIp', ipInput.value.trim().replace(/^https?:\/\//, '').split('/')[0]);
 
             connectBtn.disabled = true;
-            connectBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> অপেক্ষা করুন...`;
+            connectBtn.innerHTML = `অপেক্ষা করুন...`;
             connectBtn.className = "bg-indigo-400 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center justify-center gap-2 min-w-[110px]";
 
             try {
-                // no-cors ব্যবহার করা হয়েছে যাতে ব্রাউজার ব্লক না করে
-                const res = await fetch(`${baseUrl}/type`, { 
+                // no-cors ব্যবহার করা হয়েছে যাতে ব্রাউজার ব্লক না করে (ভয়েসের জন্য কাজ করে)
+                await fetch(`${baseUrl}/type`, { 
                     method: 'POST', 
                     body: ' ',
                     mode: 'no-cors'
                 });
 
-                // no-cors এর ক্ষেত্রে error না হলে ধরে নিব কানেক্টেড
                 connectBtn.className = "bg-green-500 text-white font-bold py-2 px-4 rounded-lg shadow transition-colors flex items-center justify-center gap-1 min-w-[110px]";
                 connectBtn.innerHTML = `✅ কানেক্টেড`;
                 warningBox.classList.add('hidden');
                 disconnectBtn.classList.remove('hidden');
-                showCustomAlert('পিসির সাথে সফলভাবে কানেক্ট হয়েছে!');
+                showCustomAlert('পিসির সাথে ভয়েস টাইপিং কানেক্ট হয়েছে!');
             } catch (err) {
                 console.error("Connection Error:", err);
                 connectBtn.className = "bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow transition-colors flex items-center justify-center gap-1 min-w-[110px]";
@@ -33361,6 +33360,7 @@ function initializeFileTransfer() {
     const downProgressCont = document.getElementById('ftDownProgressCont');
     const downBar = document.getElementById('ftDownBar');
 
+    let isDisconnected = true;
     let isDownloading = false;
     let selectedUploadFiles = [];
     let pendingCheckInterval;
@@ -33378,34 +33378,45 @@ function initializeFileTransfer() {
         });
     }
 
-    // কানেক্ট লজিক (no-cors ব্যবহার করে)
+    // কানেক্ট লজিক (এখানে no-cors ব্যবহার করা যাবে না, কারণ রেসপন্স চেক করতে হবে)
     connectBtn.addEventListener('click', async () => {
         const baseUrl = getBaseUrl();
         if (!baseUrl) return showCustomAlert('অনুগ্রহ করে পিসির আইপি এড্রেস দিন।');
 
         connectBtn.disabled = true;
-        connectBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> অপেক্ষা করুন...`;
+        connectBtn.innerHTML = `অপেক্ষা করুন...`;
+        connectBtn.className = "bg-indigo-400 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center justify-center gap-2 min-w-[110px]";
 
         try {
-            // no-cors এর কারণে ব্রাউজার রিকোয়েস্ট ব্লক করবে না
-            await fetch(`${baseUrl}/connect`, { method: 'GET', mode: 'no-cors' });
+            // ফাইল ট্রান্সফারে no-cors ব্যবহার করলে কানেক্ট রিকোয়েস্ট পিসিতে পৌঁছায় না।
+            // তাই স্টান্ডার্ড Fetch ব্যবহার করা হয়েছে। 
+            const res = await fetch(`${baseUrl}/connect`, { method: 'GET' });
             
-            connectBtn.className = "bg-green-500 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center justify-center gap-1 min-w-[110px]";
-            connectBtn.innerHTML = `✅ কানেক্টেড`;
-            
-            disconnectBtn.classList.remove('hidden');
-            if (warningBox) warningBox.classList.add('hidden');
-            
-            showCustomAlert('পিসির সাথে কানেক্ট রিকোয়েস্ট পাঠানো হয়েছে (পিসিতে Allow দিন)!');
-            
-            // পেন্ডিং ফাইল চেকার চালু করা
-            pendingCheckInterval = setInterval(checkPendingFiles, 2000);
-            
+            if (res.ok || res.status === 200) {
+                isDisconnected = false;
+                connectBtn.className = "bg-green-500 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center justify-center gap-1 min-w-[110px]";
+                connectBtn.innerHTML = `✅ কানেক্টেড`;
+                
+                disconnectBtn.classList.remove('hidden');
+                if (warningBox) warningBox.classList.add('hidden');
+                
+                showCustomAlert('পিসির সাথে ফাইল ট্রান্সফার চালু হয়েছে!');
+                pendingCheckInterval = setInterval(checkPendingFiles, 2000);
+            } else if (res.status === 403) {
+                throw new Error('Rejected');
+            } else {
+                throw new Error('Failed');
+            }
         } catch (err) {
             connectBtn.className = "bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center justify-center gap-1 min-w-[110px]";
             connectBtn.innerHTML = `❌ ব্যর্থ`;
-            if (warningBox) warningBox.classList.remove('hidden');
-            showCustomAlert('কানেক্ট করা যায়নি! পিসি ও মোবাইল একই নেটওয়ার্কে আছে কিনা চেক করুন।');
+            
+            if (err.message === 'Rejected') {
+                showCustomAlert('পিসি থেকে কানেকশন রিকোয়েস্ট বাতিল করা হয়েছে!');
+            } else {
+                if (warningBox) warningBox.classList.remove('hidden');
+                showCustomAlert('কানেক্ট করা যায়নি! ব্রাউজার সিকিউরিটি ব্লক করেছে, নিচের ওয়ার্নিং পড়ুন।');
+            }
         } finally {
             connectBtn.disabled = false;
         }
@@ -33414,8 +33425,10 @@ function initializeFileTransfer() {
     // ডিসকানেক্ট লজিক
     disconnectBtn.addEventListener('click', () => {
         const baseUrl = getBaseUrl();
+        // ডিসকানেক্টের ক্ষেত্রে no-cors চললে সমস্যা নেই
         if (baseUrl) fetch(`${baseUrl}/disconnect`, { method: 'POST', mode: 'no-cors' }).catch(() => {});
         
+        isDisconnected = true;
         clearInterval(pendingCheckInterval);
         
         connectBtn.className = "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center justify-center gap-2 min-w-[110px]";
@@ -33460,6 +33473,7 @@ function initializeFileTransfer() {
     }
 
     uploadBtn.addEventListener('click', async () => {
+        if(isDisconnected) return showCustomAlert("প্রথমে কানেক্ট বাটনে ক্লিক করুন।");
         const baseUrl = getBaseUrl();
         if(!baseUrl) return showCustomAlert("অনুগ্রহ করে পিসির আইপি এড্রেস দিন।");
         if(selectedUploadFiles.length === 0) return;
@@ -33483,7 +33497,7 @@ function initializeFileTransfer() {
                         upBar.style.width = p + '%';
                     }
                 };
-                // no-cors থাকায় status 0 আসলে তা সাকসেস ধরা হবে
+                
                 xhr.onload = () => { if(xhr.status === 200 || xhr.status === 0) resolve(); else reject(); };
                 xhr.onerror = () => {
                     if (warningBox) warningBox.classList.remove('hidden');
@@ -33507,14 +33521,14 @@ function initializeFileTransfer() {
 
     // ================== Download Logic ==================
     async function checkPendingFiles() {
-        if(isDownloading) return;
+        if(isDisconnected || isDownloading) return;
         const baseUrl = getBaseUrl();
         try {
-            // GET রিকোয়েস্টে JSON পড়ার জন্য CORS লাগে। পিসি থেকে Allow না থাকলে এটা ফেইল করবে।
             let res = await fetch(`${baseUrl}/api/pending`);
             let files = await res.json();
             renderPendingList(files);
         } catch(e) {
+            // যদি CORS এর কারণে লিস্ট না আসে, তবে একবার ম্যাসেজ দেখাবে
             if (downList && downList.innerHTML.includes("অপেক্ষা করা হচ্ছে")) {
                 downList.innerHTML = '<span class="text-red-500 text-xs font-bold">ব্রাউজার ব্লক করেছে। দয়া করে উপরের "সরাসরি ওপেন করুন" বাটনে চাপুন।</span>';
             }
