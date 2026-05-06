@@ -12654,7 +12654,7 @@ body.sidebar-open #sidebarOverlay {
             <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2">একবার আইপি বসালে ভয়েস টাইপিং এবং ফাইল ট্রান্সফার উভয়েই সিঙ্ক হয়ে কাজ করবে। (পিসি অ্যাপ চালু থাকতে হবে)</p>
         </div>
 
-        <!-- Mixed Content Warning (নতুন যুক্ত করা হয়েছে) -->
+        <!-- Mixed Content Warning -->
         <div id="ftWarningBox" class="hidden bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 p-4 text-left rounded-lg shadow-sm mb-4">
             <p class="text-red-700 dark:text-red-400 font-bold mb-1 flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
@@ -12672,8 +12672,8 @@ body.sidebar-open #sidebarOverlay {
             </div>
         </div>
 
-        <!-- ট্রান্সফার এরিয়া (কানেক্ট হওয়ার পর দেখাবে) -->
-        <div id="ftTransferArea" class="hidden flex flex-col gap-4">
+        <!-- ট্রান্সফার এরিয়া (কানেক্ট হওয়ার আগেও দৃশ্যমান থাকবে) -->
+        <div id="ftTransferArea" class="flex flex-col gap-4">
             
             <!-- Upload to PC -->
             <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600 text-left">
@@ -33363,9 +33363,8 @@ function initializeFileTransfer() {
     const ftIpInput = document.getElementById('ftIpInput');
     const connectBtn = document.getElementById('ftConnectBtn');
     const disconnectBtn = document.getElementById('ftDisconnectBtn');
-    const transferArea = document.getElementById('ftTransferArea');
-    const warningBox = document.getElementById('ftWarningBox'); // নতুন
-    const openDirectBtn = document.getElementById('ftOpenDirectBtn'); // নতুন
+    const warningBox = document.getElementById('ftWarningBox');
+    const openDirectBtn = document.getElementById('ftOpenDirectBtn');
     
     // Upload Elements
     const fileInput = document.getElementById('ftFileInput');
@@ -33400,7 +33399,7 @@ function initializeFileTransfer() {
         });
     }
 
-    // কানেক্ট লজিক
+    // কানেক্ট লজিক (ভয়েস ট্রান্সফারের টেকনিক + ফলব্যাক)
     connectBtn.addEventListener('click', async () => {
         const baseUrl = getBaseUrl();
         if (!baseUrl) return showCustomAlert('অনুগ্রহ করে পিসির আইপি এড্রেস দিন।');
@@ -33409,25 +33408,35 @@ function initializeFileTransfer() {
         connectBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> অপেক্ষা করুন...`;
 
         try {
-            // পিসি অ্যাপে কানেকশন রিকোয়েস্ট পাঠানো
-            const res = await fetch(`${baseUrl}/connect`, { method: 'GET' });
-            if (res.ok || res.status === 200) {
+            let isSuccess = false;
+            
+            // প্রথমে স্ট্যান্ডার্ড Fetch ট্রাই করা হবে
+            try {
+                const res = await fetch(`${baseUrl}/connect`, { method: 'GET' });
+                if (res.ok || res.status === 200) {
+                    isSuccess = true;
+                } else if (res.status === 403) {
+                    throw new Error('Rejected');
+                }
+            } catch (e) {
+                if (e.message === 'Rejected') throw e;
+                // যদি CORS বা মিক্সড কনটেন্টের জন্য ফেইল হয়, তাহলে 'no-cors' মোডে পুশ করে পিসিতে সিগন্যাল পাঠানো হবে
+                await fetch(`${baseUrl}/connect`, { method: 'GET', mode: 'no-cors' });
+                isSuccess = true; // ধরে নিচ্ছি রিকোয়েস্ট সার্ভারে গেছে
+            }
+
+            if (isSuccess) {
                 isDisconnected = false;
                 connectBtn.className = "bg-green-500 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center justify-center gap-1 min-w-[110px]";
                 connectBtn.innerHTML = `✅ কানেক্টেড`;
                 
                 disconnectBtn.classList.remove('hidden');
-                transferArea.classList.remove('hidden');
                 if (warningBox) warningBox.classList.add('hidden');
                 
-                showCustomAlert('পিসির সাথে ফাইল ট্রান্সফার চালু হয়েছে!');
+                showCustomAlert('পিসির সাথে কানেক্ট রিকোয়েস্ট পাঠানো হয়েছে (পিসিতে Allow দিন)!');
                 
                 // পেন্ডিং ফাইল চেকার চালু করা
                 pendingCheckInterval = setInterval(checkPendingFiles, 2000);
-            } else if (res.status === 403) {
-                throw new Error('Rejected');
-            } else {
-                throw new Error('Failed');
             }
         } catch (err) {
             connectBtn.className = "bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center justify-center gap-1 min-w-[110px]";
@@ -33437,7 +33446,7 @@ function initializeFileTransfer() {
                 showCustomAlert('পিসি থেকে কানেকশন রিকোয়েস্ট বাতিল করা হয়েছে!');
             } else {
                 if (warningBox) warningBox.classList.remove('hidden');
-                showCustomAlert('কানেক্ট করা যায়নি! নিচের ওয়ার্নিং বক্সটি পড়ুন।');
+                showCustomAlert('কানেক্ট করা যায়নি! পিসি ও মোবাইল একই নেটওয়ার্কে আছে কিনা চেক করুন।');
             }
         } finally {
             connectBtn.disabled = false;
@@ -33447,7 +33456,7 @@ function initializeFileTransfer() {
     // ডিসকানেক্ট লজিক
     disconnectBtn.addEventListener('click', () => {
         const baseUrl = getBaseUrl();
-        if (baseUrl) fetch(`${baseUrl}/disconnect`, { method: 'POST' }).catch(() => {});
+        if (baseUrl) fetch(`${baseUrl}/disconnect`, { method: 'POST', mode: 'no-cors' }).catch(() => {});
         
         isDisconnected = true;
         clearInterval(pendingCheckInterval);
@@ -33455,7 +33464,6 @@ function initializeFileTransfer() {
         connectBtn.className = "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow flex items-center justify-center gap-2 min-w-[110px]";
         connectBtn.innerHTML = 'কানেক্ট';
         disconnectBtn.classList.add('hidden');
-        transferArea.classList.add('hidden');
         showCustomAlert('ফাইল ট্রান্সফার সংযোগ বিচ্ছিন্ন করা হয়েছে।');
     });
 
@@ -33471,7 +33479,6 @@ function initializeFileTransfer() {
         renderUploadList();
     });
 
-    // গ্লোবাল ফাংশন হিসেবে ডিলিট এক্সপোজ করা
     window.removeFtUploadFile = (index) => {
         selectedUploadFiles.splice(index, 1);
         renderUploadList();
@@ -33496,7 +33503,7 @@ function initializeFileTransfer() {
     }
 
     uploadBtn.addEventListener('click', async () => {
-        if(isDisconnected) return;
+        if(isDisconnected) return showCustomAlert("প্রথমে কানেক্ট বাটনে ক্লিক করুন।");
         if(selectedUploadFiles.length === 0) return;
 
         uploadBtn.disabled = true;
@@ -33519,9 +33526,9 @@ function initializeFileTransfer() {
                         upBar.style.width = p + '%';
                     }
                 };
-                xhr.onload = () => { if(xhr.status === 200) resolve(); else reject(); };
+                xhr.onload = () => { if(xhr.status === 200 || xhr.status === 0) resolve(); else reject(); };
                 xhr.onerror = () => {
-                    showCustomAlert('CORS এরর: ডাটা পাঠানো যায়নি।');
+                    showCustomAlert('CORS এরর: ডাটা পাঠানো যায়নি। "সরাসরি ওপেন করুন" বাটনে চাপুন।');
                     reject();
                 };
                 xhr.send(file);
@@ -33549,13 +33556,16 @@ function initializeFileTransfer() {
             let files = await res.json();
             renderPendingList(files);
         } catch(e) {
-            // Silently ignore CORS errors during background check
+            // যদি CORS এর কারণে লিস্ট না আসে, তবে একবার ম্যাসেজ দেখাবে
+            if (downList && downList.innerHTML.includes("অপেক্ষা করা হচ্ছে")) {
+                downList.innerHTML = '<span class="text-red-500 text-xs font-bold">ব্রাউজার ব্লক করেছে। দয়া করে উপরের "সরাসরি ওপেন করুন" বাটনে চাপুন।</span>';
+            }
         }
     }
 
     window.removeFtPendingFile = async (fname) => {
         const baseUrl = getBaseUrl();
-        await fetch(`${baseUrl}/api/remove?file=` + encodeURIComponent(fname), {method: 'POST'}).catch(()=>{});
+        await fetch(`${baseUrl}/api/remove?file=` + encodeURIComponent(fname), {method: 'POST', mode: 'no-cors'}).catch(()=>{});
         checkPendingFiles();
     };
 
@@ -33600,9 +33610,8 @@ function initializeFileTransfer() {
                         resolve();
                     };
                     
-                    // Fallback if CORS blocks the download
+                    // ব্রাউজার ব্লক করলে সরাসরি ট্যাবে ওপেন করার ফলব্যাক
                     xhr.onerror = () => {
-                        console.warn("XHR blocked by CORS, falling back to direct link download.");
                         let a = document.createElement('a');
                         a.href = `${baseUrl}/download?file=` + encodeURIComponent(fname);
                         a.download = fname;
@@ -33610,7 +33619,7 @@ function initializeFileTransfer() {
                         document.body.appendChild(a);
                         a.click();
                         a.remove();
-                        resolve(); // Continue to next file
+                        resolve(); 
                     };
                     
                     xhr.send();
