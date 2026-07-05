@@ -12808,8 +12808,9 @@ body.sidebar-open #sidebarOverlay {
         <!-- +++ ভাষার ড্রপডাউন এবং কাস্টম ইনপুট +++ -->
         <div class="flex flex-col sm:flex-row items-center justify-center gap-2 mb-6 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600">
             <label class="font-bold text-gray-700 dark:text-gray-300">ভাষা নির্বাচন করুন:</label>
-            <select id="liveMicLangCombo" class="p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-500 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+<select id="liveMicLangCombo" class="p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-500 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
                 <option value="bn-BD" selected>বাংলা (Bangla)</option>
+                <option value="bijoy_ansi">বিজয় আন্সি (Bijoy Ansi)</option>
                 <option value="en-US">English (US)</option>
                 <option value="ar-SA">Arabic (Saudi Arabia)</option>
                 <option value="hi-IN">Hindi (India)</option>
@@ -14461,9 +14462,47 @@ const phoneticCombinations = {
         // ====================================================================
 
 
-        // দীর্ঘতম থেকে ছোট ক্রমে কীগুলি সাজান যাতে দীর্ঘ ক্রমগুলি প্রথমে হ্যান্ডেল করা যায়
-        const sortedUnicodeKeys = Object.keys(unicodeToBijoyMap).sort((a, b) => b.length - a.length);
+const sortedUnicodeKeys = Object.keys(unicodeToBijoyMap).sort((a, b) => b.length - a.length);
         const sortedBijoyKeys = Object.keys(bijoyToUnicodeMap).sort((a, b) => b.length - a.length);
+
+        // +++ গ্লোবাল ফাংশন: ইউনিকোড থেকে বিজয় আন্সি (ভয়েস টাইপিং এর জন্য) +++
+        window.globalUnicodeToBijoy = function(unicodeInput) {
+            unicodeInput = unicodeInput.replace(/য়/g, 'য়').replace(/ড়/g, 'ড়').replace(/ঢ়/g, 'ঢ়');
+            const bengaliConsonants = 'কখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযরলশষসহড়ঢ়য়';
+            const unicodeIkar = '\u09BF'; const unicodeEkar = '\u09C7'; const unicodeOikar = '\u09C8'; const unicodeOkar = '\u09CB'; const unicodeOukar = '\u09CC'; const unicodeAkar = '\u09BE'; const unicodeOuKarPart2 = '\u09D7'; const unicodeHasanta = '\u09CD'; const unicodeRefChar = '\u09B0\u09CD'; const unicodeJaPhala = '\u09CD\u09AF'; const unicodeRaPhala = '\u09CD\u09B0';
+            const consonantOrConjunct = `(?:(?:[${bengaliConsonants}]${unicodeHasanta})+[${bengaliConsonants}]|[${bengaliConsonants}])`;
+            const o_ou_kar_regex = new RegExp(`(${consonantOrConjunct})(${unicodeOkar}|${unicodeOukar})`, 'g');
+            unicodeInput = unicodeInput.replace(o_ou_kar_regex, (match, base, vowelSign) => {
+                if (vowelSign === unicodeOkar) return base + unicodeEkar + unicodeAkar;
+                if (vowelSign === unicodeOukar) return base + unicodeEkar + unicodeOuKarPart2;
+                return match;
+            });
+            const precedingVowelRegex = new RegExp(`(${unicodeRefChar})?(${consonantOrConjunct})((?:${unicodeJaPhala}|${unicodeRaPhala})?)(${unicodeIkar}|${unicodeEkar}|${unicodeOikar})`, 'g');
+            unicodeInput = unicodeInput.replace(precedingVowelRegex, (match, reph, base, phala, vowel) => { return vowel + (reph || '') + base + (phala || ''); });
+            let bijoyOutput = ''; let k = 0;
+            while (k < unicodeInput.length) {
+                let foundMatch = false;
+                if (unicodeInput.substring(k, k + 2) === unicodeRefChar) {
+                    let baseCluster = ''; let clusterLen = 0;
+                    for (const key of sortedUnicodeKeys) {
+                        if (key.length > 0 && unicodeInput.substring(k + 2, k + 2 + key.length) === key) { baseCluster = key; clusterLen = key.length; break; }
+                    }
+                    if (clusterLen > 0) { bijoyOutput += unicodeToBijoyMap[baseCluster] + '©'; k += 2 + clusterLen; foundMatch = true; }
+                }
+                if (!foundMatch) {
+                    for (const key of sortedUnicodeKeys) {
+                        if (key.length > 0 && unicodeInput.substring(k, k + key.length) === key) { bijoyOutput += unicodeToBijoyMap[key]; k += key.length; foundMatch = true; break; }
+                    }
+                }
+                if (!foundMatch) { bijoyOutput += unicodeInput[k]; k++; }
+            }
+            for (const [wrong, correct] of Object.entries(manualAnsiReplacements)) {
+                if (wrong) { const regex = new RegExp(wrong.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'); bijoyOutput = bijoyOutput.replace(regex, correct); }
+            }
+            bijoyOutput = bijoyOutput.replace(/^‡/gm, '†').replace(/\|‡/g, '|†').replace(/^‰/gm, 'ˆ').replace(/\|‰/g, '|ˆ');
+            return bijoyOutput;
+        };
+        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	function convertLeftToRight() {
             const textAreaLeft = document.getElementById('textAreaLeft');
@@ -31316,28 +31355,194 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         voiceBtn.classList.remove('listening');
     };
 
-recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript.trim();
-        console.log("Voice Command/Text Received:", transcript);
+// +++ হেল্পার ফাংশন: ইউনিকোড থেকে বিজয় আন্সি কনভার্সন (ভয়েসের জন্য) +++
+    function convertUnicodeToBijoyAnsiForVoice(unicodeInput) {
+        if (!unicodeInput) return '';
+        unicodeInput = unicodeInput.replace(/য়/g, 'য়').replace(/ড়/g, 'ড়').replace(/ঢ়/g, 'ঢ়');
+        const bengaliConsonants = 'কখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযরলশষসহড়ঢ়য়';
+        const unicodeIkar = '\u09BF'; const unicodeEkar = '\u09C7'; const unicodeOikar = '\u09C8'; const unicodeOkar = '\u09CB'; const unicodeOukar = '\u09CC'; const unicodeAkar = '\u09BE'; const unicodeOuKarPart2 = '\u09D7'; const unicodeHasanta = '\u09CD'; const unicodeRefChar = '\u09B0\u09CD'; const unicodeJaPhala = '\u09CD\u09AF'; const unicodeRaPhala = '\u09CD\u09B0';
+        
+        const consonantOrConjunct = `(?:(?:[${bengaliConsonants}]${unicodeHasanta})+[${bengaliConsonants}]|[${bengaliConsonants}])`;
+        const o_ou_kar_regex = new RegExp(`(${consonantOrConjunct})(${unicodeOkar}|${unicodeOukar})`, 'g');
+        unicodeInput = unicodeInput.replace(o_ou_kar_regex, (match, base, vowelSign) => {
+            if (vowelSign === unicodeOkar) return base + unicodeEkar + unicodeAkar;
+            if (vowelSign === unicodeOukar) return base + unicodeEkar + unicodeOuKarPart2;
+            return match;
+        });
 
-        // +++ পিসিতে কানেক্ট থাকলে পিসি ভয়েস ট্যাবের বড় মাইকটার মতো কাজ করবে +++
-        if (window.isPcVoiceConnected) {
-            const autoSendCheck = document.getElementById('pcVoiceAutoSend');
-            const pcTextBox = document.getElementById('pcVoiceTextBox');
-            
-            if (autoSendCheck && autoSendCheck.checked) {
-                // পিসিতে ডাটা পাঠানো
-                if (window.sendVoiceDataToPC) window.sendVoiceDataToPC(transcript);
-                showCustomAlert('পিসিতে পাঠানো হয়েছে: ' + transcript);
-                // টেক্সটবক্সে আপডেট করা
-                if (pcTextBox) pcTextBox.value += (pcTextBox.value ? ' ' : '') + transcript + " (Sent ✓)";
-            } else {
-                showCustomAlert('টেক্সট বক্সে যোগ করা হয়েছে (অটো সেন্ড বন্ধ): ' + transcript);
-                if (pcTextBox) pcTextBox.value += (pcTextBox.value ? ' ' : '') + transcript;
+        const precedingVowelRegex = new RegExp(`(${unicodeRefChar})?(${consonantOrConjunct})((?:${unicodeJaPhala}|${unicodeRaPhala})?)(${unicodeIkar}|${unicodeEkar}|${unicodeOikar})`, 'g');
+        unicodeInput = unicodeInput.replace(precedingVowelRegex, (match, reph, base, phala, vowel) => {
+            return vowel + (reph || '') + base + (phala || '');
+        });
+        
+        let bijoyOutput = '';
+        let k = 0;
+        while (k < unicodeInput.length) {
+            let foundMatch = false;
+            if (unicodeInput.substring(k, k + 2) === unicodeRefChar) {
+                let baseCluster = '';
+                let clusterLen = 0;
+                for (const key of sortedUnicodeKeys) {
+                    if (key.length > 0 && unicodeInput.substring(k + 2, k + 2 + key.length) === key) {
+                        baseCluster = key;
+                        clusterLen = key.length;
+                        break;
+                    }
+                }
+                if (clusterLen > 0) {
+                    bijoyOutput += unicodeToBijoyMap[baseCluster] + '©';
+                    k += 2 + clusterLen;
+                    foundMatch = true;
+                }
             }
-            return; // পিসির কাজ শেষ, লোকাল টুলবক্সে আর টাইপ বা কমান্ড হবে না
+
+            if (!foundMatch) {
+                for (const key of sortedUnicodeKeys) {
+                    if (key.length > 0 && unicodeInput.substring(k, k + key.length) === key) {
+                        bijoyOutput += unicodeToBijoyMap[key];
+                        k += key.length;
+                        foundMatch = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!foundMatch) {
+                bijoyOutput += unicodeInput[k];
+                k++;
+            }
         }
-        // +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        for (const [wrong, correct] of Object.entries(manualAnsiReplacements)) {
+            if (wrong) {
+                const regex = new RegExp(wrong.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                bijoyOutput = bijoyOutput.replace(regex, correct);
+            }
+        }
+
+        bijoyOutput = bijoyOutput.replace(/^‡/gm, '†'); 
+        bijoyOutput = bijoyOutput.replace(/\|‡/g, '|†');   
+        bijoyOutput = bijoyOutput.replace(/^‰/gm, 'ˆ'); 
+        bijoyOutput = bijoyOutput.replace(/\|‰/g, '|ˆ');   
+
+        return bijoyOutput;
+    }
+
+// +++ হেল্পার ফাংশন: তারিখ ও বারের ভয়েস কমান্ড প্রসেসিং (উভয় ভাষার জন্য) +++
+    window.processDateDayCommands = function(transcript) {
+        const transcriptLower = transcript.toLowerCase().replace(/[?।.,]/g, ''); // যতিচিহ্ন সরিয়ে ফেলা
+        const now = new Date();
+        
+        // বাংলা কমান্ড
+        const bnDayCmds = ["আজ কি বার", "আজকে কি বার", "আজকের বার"];
+        const bnDateCmds = ["আজ কত তারিখ", "আজকের তারিখ", "আজকে কত তারিখ", "আজকে তারিখ কত", "আজকের তারিখ কত"];
+        
+        // ইংরেজি কমান্ড
+        const enDayCmds = ["day today", "today's day", "what day is today", "what day is it today"];
+        const enDateCmds = ["date today", "today's date", "what's today's date", "what is the date today", "what is today's date"];
+
+        const toBanglaNum = (n) => n.toString().replace(/\d/g, d => "০১২৩৪৫৬৭৮৯"[d]);
+
+        if (bnDayCmds.includes(transcriptLower)) {
+            return now.toLocaleDateString('bn-BD', { weekday: 'long' });
+        } 
+        else if (bnDateCmds.includes(transcriptLower)) {
+            const dayName = now.toLocaleDateString('bn-BD', { weekday: 'long' });
+            const day = toBanglaNum(String(now.getDate()).padStart(2, '0'));
+            const month = now.toLocaleDateString('bn-BD', { month: 'long' });
+            const year = toBanglaNum(now.getFullYear());
+            return `${dayName} ${day} ${month} ${year}ইং`;
+        } 
+        else if (enDayCmds.includes(transcriptLower)) {
+            return now.toLocaleDateString('en-US', { weekday: 'long' });
+        } 
+        else if (enDateCmds.includes(transcriptLower)) {
+            const dayName = now.toLocaleDateString('en-US', { weekday: 'long' });
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = now.toLocaleDateString('en-US', { month: 'long' });
+            const year = now.getFullYear();
+            return `${dayName}, ${month} ${day}, ${year}`;
+        }
+        
+        return transcript; // কোনো কমান্ড ম্যাচ না করলে আসল টেক্সট রিটার্ন করবে
+    };
+
+    // +++ হেল্পার ফাংশন: ইউনিকোড থেকে বিজয় আন্সি কনভার্সন (ভয়েসের জন্য) +++
+    function convertUnicodeToBijoyAnsiForVoice(unicodeInput) {
+        if (!unicodeInput) return '';
+        unicodeInput = unicodeInput.replace(/য়/g, 'য়').replace(/ড়/g, 'ড়').replace(/ঢ়/g, 'ঢ়');
+        const bengaliConsonants = 'কখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযরলশষসহড়ঢ়য়';
+        const unicodeIkar = '\u09BF'; const unicodeEkar = '\u09C7'; const unicodeOikar = '\u09C8'; const unicodeOkar = '\u09CB'; const unicodeOukar = '\u09CC'; const unicodeAkar = '\u09BE'; const unicodeOuKarPart2 = '\u09D7'; const unicodeHasanta = '\u09CD'; const unicodeRefChar = '\u09B0\u09CD'; const unicodeJaPhala = '\u09CD\u09AF'; const unicodeRaPhala = '\u09CD\u09B0';
+        
+        const consonantOrConjunct = `(?:(?:[${bengaliConsonants}]${unicodeHasanta})+[${bengaliConsonants}]|[${bengaliConsonants}])`;
+        const o_ou_kar_regex = new RegExp(`(${consonantOrConjunct})(${unicodeOkar}|${unicodeOukar})`, 'g');
+        unicodeInput = unicodeInput.replace(o_ou_kar_regex, (match, base, vowelSign) => {
+            if (vowelSign === unicodeOkar) return base + unicodeEkar + unicodeAkar;
+            if (vowelSign === unicodeOukar) return base + unicodeEkar + unicodeOuKarPart2;
+            return match;
+        });
+
+        const precedingVowelRegex = new RegExp(`(${unicodeRefChar})?(${consonantOrConjunct})((?:${unicodeJaPhala}|${unicodeRaPhala})?)(${unicodeIkar}|${unicodeEkar}|${unicodeOikar})`, 'g');
+        unicodeInput = unicodeInput.replace(precedingVowelRegex, (match, reph, base, phala, vowel) => {
+            return vowel + (reph || '') + base + (phala || '');
+        });
+        
+        let bijoyOutput = '';
+        let k = 0;
+        while (k < unicodeInput.length) {
+            let foundMatch = false;
+            if (unicodeInput.substring(k, k + 2) === unicodeRefChar) {
+                let baseCluster = '';
+                let clusterLen = 0;
+                for (const key of sortedUnicodeKeys) {
+                    if (key.length > 0 && unicodeInput.substring(k + 2, k + 2 + key.length) === key) {
+                        baseCluster = key;
+                        clusterLen = key.length;
+                        break;
+                    }
+                }
+                if (clusterLen > 0) {
+                    bijoyOutput += unicodeToBijoyMap[baseCluster] + '©';
+                    k += 2 + clusterLen;
+                    foundMatch = true;
+                }
+            }
+
+            if (!foundMatch) {
+                for (const key of sortedUnicodeKeys) {
+                    if (key.length > 0 && unicodeInput.substring(k, k + key.length) === key) {
+                        bijoyOutput += unicodeToBijoyMap[key];
+                        k += key.length;
+                        foundMatch = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!foundMatch) {
+                bijoyOutput += unicodeInput[k];
+                k++;
+            }
+        }
+
+        for (const [wrong, correct] of Object.entries(manualAnsiReplacements)) {
+            if (wrong) {
+                const regex = new RegExp(wrong.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                bijoyOutput = bijoyOutput.replace(regex, correct);
+            }
+        }
+
+        bijoyOutput = bijoyOutput.replace(/^‡/gm, '†'); 
+        bijoyOutput = bijoyOutput.replace(/\|‡/g, '|†');   
+        bijoyOutput = bijoyOutput.replace(/^‰/gm, 'ˆ'); 
+        bijoyOutput = bijoyOutput.replace(/\|‰/g, '|ˆ');   
+
+        return bijoyOutput;
+    }
+
+    recognition.onresult = function(event) {
+        let rawTranscript = event.results[0][0].transcript.trim();
+        console.log("Voice Command/Text Received:", rawTranscript);
 
         // ফোকাস করা এলিমেন্ট চেক করা
         const activeEl = document.activeElement;
@@ -31347,9 +31552,43 @@ recognition.onresult = function(event) {
             activeEl.isContentEditable
         );
 
-        if (isEditable) {
+        // +++ যদি পিসিতে কানেক্ট থাকে বা কোনো টেক্সটবক্সে ফোকাস থাকে (টাইপিং মোড) +++
+        if (window.isPcVoiceConnected || isEditable) {
+            
+            // ১. তারিখ ও বারের স্পেশাল কমান্ড চেক (বাংলা ও ইংরেজি উভয়)
+            rawTranscript = window.processDateDayCommands(rawTranscript);
+
+            // ২. লেআউট চেক করা হচ্ছে
+            const activeLayoutBtn = document.querySelector('.layout-option.active');
+            const currentLayoutName = activeLayoutBtn ? activeLayoutBtn.getAttribute('data-layout') : 'english';
+            const isBijoyAnsi = (currentLayoutName === 'bijoy_ansi');
+
+            let textToProcess = rawTranscript;
+
+            // ৩. বিজয় আন্সি কনভার্সন (যদি সিলেক্ট করা থাকে)
+            if (isBijoyAnsi) {
+                textToProcess = convertUnicodeToBijoyAnsiForVoice(textToProcess);
+            }
+
+            // ৪. পিসিতে পাঠানোর লজিক
+            if (window.isPcVoiceConnected) {
+                const autoSendCheck = document.getElementById('pcVoiceAutoSend');
+                const pcTextBox = document.getElementById('pcVoiceTextBox');
+                
+                if (autoSendCheck && autoSendCheck.checked) {
+                    if (window.sendVoiceDataToPC) window.sendVoiceDataToPC(textToProcess);
+                    showCustomAlert('পিসিতে পাঠানো হয়েছে: ' + textToProcess);
+                    if (pcTextBox) pcTextBox.value += (pcTextBox.value ? ' ' : '') + textToProcess + " (Sent ✓)";
+                } else {
+                    showCustomAlert('টেক্সট বক্সে যোগ করা হয়েছে (অটো সেন্ড বন্ধ): ' + textToProcess);
+                    if (pcTextBox) pcTextBox.value += (pcTextBox.value ? ' ' : '') + textToProcess;
+                }
+                return; 
+            }
+
+            // ৫. লোকাল টেক্সটবক্সে বসানোর লজিক
             if (activeEl.isContentEditable) {
-                document.execCommand('insertText', false, transcript + ' ');
+                document.execCommand('insertText', false, textToProcess + ' ');
             } else {
                 const start = activeEl.selectionStart;
                 const end = activeEl.selectionEnd;
@@ -31357,14 +31596,16 @@ recognition.onresult = function(event) {
                 const before = text.substring(0, start);
                 const after = text.substring(end, text.length);
                 
-                activeEl.value = before + transcript + " " + after;
+                activeEl.value = before + textToProcess + " " + after;
                 
-                const newCursorPos = start + transcript.length + 1;
+                const newCursorPos = start + textToProcess.length + 1;
                 activeEl.selectionStart = activeEl.selectionEnd = newCursorPos;
                 activeEl.dispatchEvent(new Event('input', { bubbles: true }));
             }
-        } else {
-            processVoiceCommand(transcript.toLowerCase());
+        } 
+        else {
+            // কমান্ড মোড (কোনো বক্সে ফোকাস নেই এবং পিসিতেও কানেক্ট নেই)
+            processVoiceCommand(rawTranscript.toLowerCase());
         }
     };
 
@@ -31384,53 +31625,41 @@ recognition.onresult = function(event) {
 
 voiceBtn.addEventListener('click', () => {
             try {
-                // +++ পিসিতে কানেক্ট থাকলে 'পিসি ভয়েস টাইপিং' ট্যাবের ড্রপডাউন থেকে ভাষা নেবে +++
-                if (window.isPcVoiceConnected) {
-                    const liveMicLangCombo = document.getElementById('liveMicLangCombo');
-                    const liveMicCustomCode = document.getElementById('liveMicCustomCode');
-                    
-                    let selectedLang = liveMicLangCombo ? liveMicLangCombo.value : 'bn-BD';
-                    if (selectedLang === 'custom' && liveMicCustomCode) {
-                        const cCode = liveMicCustomCode.value.trim();
-                        const rx = /^[a-z]{2,3}-[A-Z]{2}$/;
-                        selectedLang = rx.test(cCode) ? cCode : 'bn-BD';
-                    }
-                    recognition.lang = selectedLang;
-                } 
-                // +++ কানেক্ট না থাকলে টপবারের কীবোর্ড লেআউট থেকে ভাষা নেবে (DOM থেকে সরাসরি চেক করে) +++
-                else {
-                    // ড্রপডাউন মেনু থেকে কোন লেআউটটি Active আছে তা বের করা হচ্ছে
+                // ఫোকাস করা এলিমেন্ট চেক করা
+                const activeEl = document.activeElement;
+                const isEditable = activeEl && (
+                    (activeEl.tagName === 'INPUT' && (activeEl.type === 'text' || activeEl.type === 'search' || activeEl.type === 'number' || activeEl.type === 'url' || activeEl.type === 'email')) || 
+                    activeEl.tagName === 'TEXTAREA' || 
+                    activeEl.isContentEditable
+                );
+
+                // +++ যদি পিসিতে কানেক্ট থাকে বা কোনো টেক্সটবক্সে ফোকাস থাকে, তবে লেআউট অনুযায়ী ভাষা নেবে +++
+                if (window.isPcVoiceConnected || isEditable) {
                     const activeLayoutBtn = document.querySelector('.layout-option.active');
                     const currentLayoutName = activeLayoutBtn ? activeLayoutBtn.getAttribute('data-layout') : 'english';
 
-if (currentLayoutName === 'english') {
+                    if (currentLayoutName === 'english') {
                         recognition.lang = 'en-US';
                     } else if (currentLayoutName === 'arabic_phonetic' || currentLayoutName === 'arabic_101') {
                         recognition.lang = 'ar-SA';
-} else if (currentLayoutName === 'custom_voice') {
-                        // +++ ফিক্স ২: কাস্টম ভয়েস কোড ভ্যালিডেশন এবং লেআউট ফলব্যাক লজিক +++
+                    } else if (currentLayoutName === 'custom_voice') {
                         const customInput = document.getElementById('topbarCustomVoiceCode');
                         const cCode = customInput ? customInput.value.trim() : '';
-                        const rx = /^[a-z]{2,3}-[A-Z]{2}$/;
-                        
-                        // সঠিক ফরম্যাট (যেমন hi-IN, ar-SA) হলে সেটা নেবে
-                        if (rx.test(cCode)) {
+                        if (/^[a-z]{2,3}-[A-Z]{2}$/.test(cCode)) {
                             recognition.lang = cCode; 
                         } else {
-                            // ভুল হলে ব্যবহারকারীকে অ্যালার্ট দিয়ে ডিফল্ট ইংলিশ লেআউটে ফলব্যাক করানো হবে
-                            showCustomAlert('ভুল ভয়েস কোড! ডিফল্ট ইংলিশ লেআউটে রিসেট করা হলো। (সঠিক ফরম্যাট: bn-BD, en-US)');
+                            showCustomAlert('ভুল ভয়েস কোড! ডিফল্ট ইংলিশ লেআউটে রিসেট করা হলো।');
                             recognition.lang = 'en-US';
-                            
-                            // কীবোর্ড লেআউট UI এবং স্টেট রিসেট করা (ড্রপডাউন থেকে কাস্টম বক্স হাইড হয়ে যাবে)
-                            if (typeof setKeyboardLayout === 'function') {
-                                setKeyboardLayout('english', false);
-                            }
+                            if (typeof setKeyboardLayout === 'function') setKeyboardLayout('english', false);
                         }
                     } else {
                         recognition.lang = 'bn-BD'; // বাংলা (ইউনিকোড, ফনেটিক, আন্সি)
                     }
+                } 
+                // +++ টেক্সটবক্সে ফোকাস না থাকলে (অর্থাৎ কমান্ড মোডে) সর্বদা বাংলা ভাষা নেবে +++
+                else {
+                    recognition.lang = 'bn-BD';
                 }
-                // +++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
                 recognition.start();
             } catch (e) {
@@ -34301,15 +34530,24 @@ function initializePcVoiceClient() {
         };
 
 liveRec.onresult = (e) => {
-            const finalTranscript = e.results[0][0].transcript.trim();
+            let finalTranscript = e.results[0][0].transcript.trim();
 
             if (finalTranscript) {
-                // যদি পিসিতে কানেক্টেড থাকে এবং অটো সেন্ড অন থাকে
+                // ১. তারিখ ও বারের স্পেশাল কমান্ড চেক (বাংলা ও ইংরেজি উভয়)
+                if (window.processDateDayCommands) {
+                    finalTranscript = window.processDateDayCommands(finalTranscript);
+                }
+
+                // ২. +++ নতুন: বিজয় আন্সি সিলেক্ট থাকলে আউটপুট কনভার্ট করা +++
+                if (liveMicLangCombo && liveMicLangCombo.value === 'bijoy_ansi' && window.globalUnicodeToBijoy) {
+                    finalTranscript = window.globalUnicodeToBijoy(finalTranscript);
+                }
+
+                // ৩. পিসিতে পাঠানো বা টেক্সটবক্সে যুক্ত করা
                 if (!isDisconnected && autoSendCheck && autoSendCheck.checked) {
                     sendDataToPCFetch(finalTranscript, true);
                     if(textBox) textBox.value += (textBox.value ? ' ' : '') + finalTranscript + " (Sent ✓)";
                 } else {
-                    // কানেক্টেড না থাকলে বা অটো সেন্ড অফ থাকলে শুধু বক্সে যোগ হবে
                     if(textBox) textBox.value += (textBox.value ? ' ' : '') + finalTranscript;
                 }
                 saveState();
@@ -34339,22 +34577,27 @@ liveMicBtn.addEventListener('click', () => {
                 return;
             }
 
-            // বাটনে ক্লিক করলে ভাষা সেট করে একবারের জন্য মাইক চালু করবে
             let selectedLang = liveMicLangCombo ? liveMicLangCombo.value : 'bn-BD';
-            if (selectedLang === 'custom' && liveMicCustomCode) {
+            let actualApiLang = selectedLang;
+
+            // +++ যদি বিজয় আন্সি সিলেক্ট থাকে, API কে বাংলা শুনতে বাধ্য করা হবে +++
+            if (selectedLang === 'bijoy_ansi') {
+                actualApiLang = 'bn-BD';
+            } 
+            else if (selectedLang === 'custom' && liveMicCustomCode) {
                 const cCode = liveMicCustomCode.value.trim();
                 const rx = /^[a-z]{2,3}-[A-Z]{2}$/;
                 if (rx.test(cCode)) {
-                    selectedLang = cCode;
+                    actualApiLang = cCode;
                 } else {
                     showCustomAlert('ভুল কোড! ডিফল্ট বাংলা ভাষায় সেট করা হলো। (সঠিক ফরম্যাট: en-US, bn-BD)');
-                    selectedLang = 'bn-BD';
+                    actualApiLang = 'bn-BD';
                     liveMicLangCombo.value = 'bn-BD';
                     liveMicCustomCode.classList.add('hidden');
                 }
             }
             
-            liveRec.lang = selectedLang;
+            liveRec.lang = actualApiLang;
             try { liveRec.start(); } catch(err) {}
         });
     }
@@ -35779,7 +36022,7 @@ async function initializePublicComments() {
 </div>
 <!-- ======================================================== -->
 <!-- END: ফ্লোটিং সাইডবার ভিডিও প্লেয়ার -->
-<!-- ======================================================= -->
+<!-- ======================================================== -->
 
 <!-- ============================================== -->
 <!-- START: প্রোফাইল, স্টোরেজ উইন্ডো এবং নোটিফিকেশন Experimental -->
